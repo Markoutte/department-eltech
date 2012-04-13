@@ -1,0 +1,6 @@
+# Project's files #
+.project
+.pydevproject
+
+# Compiled files #
+*/__pycache__
