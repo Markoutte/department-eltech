@@ -1,32 +1,31 @@
 import unittest
-import psycopg2
+from db.database import DB 
 
 class Test(unittest.TestCase):
 
-
     def setUp(self):
-        try:
-            self.conn = psycopg2.connect("dbname='test_db' user='postgres' host='localhost' password='postgres'")
-            self.cur = self.conn.cursor()
-            pass
-        except:
-            self.fail("Can't connect to db")
+        self.__db = DB()
+        self.assertTrue(self.__db.connect("test_db"), "Something wrong")
+        self.assertTrue(self.__db.is_connected(), "Can't connect to db")
 
 
     def tearDown(self):
-        self.conn.close()
+        self.__db.close()
+        
+    def testSingletone(self):
+        self.assertTrue(self.__db is DB())
         
     def testNumOfEntries(self):
-        self.cur.execute('''SELECT * FROM human''')
-        self.assertEqual(3, self.cur.rowcount, None)
+        list = self.__db.select_all("human")
+        self.assertEqual(3, len(list), None)
         
     def testBrokenConnection(self):
-        self.cur.execute('''INSERT INTO human DEFAULT VALUES''')
-        self.cur.execute('''SELECT * FROM human''')       
-        self.assertEqual(4, self.cur.rowcount, None)
-        self.conn.rollback()
-        self.cur.execute('''SELECT * FROM human''')
-        self.assertEqual(3, self.cur.rowcount, None)
+        self.__db.execute('''INSERT INTO human DEFAULT VALUES''')
+        values = self.__db.select_all("human")    
+        self.assertEqual(4, len(values), None)
+        self.__db.rollback()
+        values = self.__db.select_all("human")    
+        self.assertEqual(3, len(values), None)
 
 
 if __name__ == "__main__":

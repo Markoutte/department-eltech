@@ -4,3 +4,6 @@
 
 # Compiled files #
 *__pycache__*
+
+# Other #
+*\LOG
