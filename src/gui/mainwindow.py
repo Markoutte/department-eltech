@@ -1,6 +1,6 @@
 """ MainWindow contains general window which is entry point for user 
 """ 
-from  db.database import DB
+import db.database2 as db
 from PyQt4.QtGui import *
 from PyQt4.QtCore import SIGNAL, QObject
 
@@ -31,27 +31,29 @@ class MainWindow(QMainWindow):
 
         
     def closeEvent(self, event):
-        DB().close()
+        db.close(db.database())
         
 ### SLOTS
 
     def connect(self):
-        db = DB()
-        db.connect(self.__db_name_le.text(),
-                   #self.__user_le.text(),
-                   #self.__pass_le.text(),
-                   #self.__host_le.text()
-                   )
+        db.connect(db.setup(db.database(), 
+                   dbname = self.__db_name_le.text(),
+                   #user = self.__user_le.text(),
+                   #password = self.__pass_le.text(),
+                   #host self.__host_le.text()
+                   ))
         
-        if (not db.is_connected()):
+        if (not db.is_connected(db.database())):
             return
                 
-        columns = db.get_columns_name("human")
+        do_query = db.do_query(db.database())
+                
+        columns = do_query("select column_name from information_schema.columns where table_name='{0}';".format("human"))
         col_names = []
         for col in columns:
             col_names.insert(0, col[0])
         
-        rows = db.select_all("human")
+        rows = do_query("SELECT * FROM human")
         self.__table.setColumnCount(len(col_names))        
         self.__table.setRowCount(len(rows))
         self.__table.setHorizontalHeaderLabels(col_names)
