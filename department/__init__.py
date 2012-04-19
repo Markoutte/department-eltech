@@ -1,5 +1,5 @@
 import sys
-from gui.mainwindow import MainWindow
+from department.gui.mainwindow import MainWindow
 from PyQt4.QtGui import *
 from PyQt4.QtCore import QSize
 

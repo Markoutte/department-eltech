@@ -2,6 +2,9 @@
 .project
 .pydevproject
 
+# PyCharm files
+/.idea*
+
 # Compiled files #
 *__pycache__*
 

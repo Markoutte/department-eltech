@@ -1,29 +1,29 @@
 import unittest
-from db.database2 import *
+from department.database import *
 
 class Test(unittest.TestCase):
 
     def setUp(self):
-        self.assertTrue(connect(setup(database(), dbname="test_db")), "Something wrong")
+        self.__db = setup(database(), dbname="test_db")
+        self.assertTrue(connect(self.__db), "Something wrong")
         
     def tearDown(self):
-        close(database())
+        close(self.__db)
+
+    def test_is_connected(self):
+        self.assertTrue(is_connected(self.__db))
+        self.assertFalse(not is_connected(self.__db))
         
-    def testSingletone(self):
-        one = database()
-        two = database()
-        self.assertTrue(one is two)
-        
-    def testNumOfEntries(self):
-        list = select_all(database(), "human")
+    def test_num_of_entries(self):
+        list = select_all(self.__db, "human")
         self.assertEqual(3, len(list), None)
 
-    def testBrokenConnection(self):
-        execute(database(), "INSERT INTO human DEFAULT VALUES")
-        values = select_all(database(), "human")    
+    def test_broken_connection(self):
+        execute(self.__db, "INSERT INTO human DEFAULT VALUES")
+        values = select_all(self.__db, "human")
         self.assertEqual(4, len(values), None)
-        rollback(database())
-        values = select_all(database(), "human")    
+        rollback(self.__db)
+        values = select_all(self.__db, "human")
         self.assertEqual(3, len(values), None)
 
 if __name__ == "__main__":

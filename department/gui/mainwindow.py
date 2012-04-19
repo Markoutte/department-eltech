@@ -1,6 +1,6 @@
 """ MainWindow contains general window which is entry point for user 
-""" 
-import db.database2 as db
+"""
+import department.database as db
 from PyQt4.QtGui import *
 from PyQt4.QtCore import SIGNAL, QObject
 
@@ -29,41 +29,41 @@ class MainWindow(QMainWindow):
         self.__table.verticalHeader().setVisible(False)
         self.__grid.addWidget(self.__table, 1, 0, 1, 5)
 
-        
+
     def closeEvent(self, event):
         db.close(db.database())
-        
-### SLOTS
+
+    ### SLOTS
 
     def connect(self):
-        db.connect(db.setup(db.database(), 
-                   dbname = self.__db_name_le.text(),
-                   #user = self.__user_le.text(),
-                   #password = self.__pass_le.text(),
-                   #host self.__host_le.text()
-                   ))
-        
+        db.connect(db.setup(db.database(),
+            dbname = self.__db_name_le.text(),
+            #user = self.__user_le.text(),
+            #password = self.__pass_le.text(),
+            #host self.__host_le.text()
+        ))
+
         if (not db.is_connected(db.database())):
             return
-                
+
         do_query = db.do_query(db.database())
-                
+
         columns = do_query("select column_name from information_schema.columns where table_name='{0}';".format("human"))
         col_names = []
         for col in columns:
             col_names.insert(0, col[0])
-        
+
         rows = do_query("SELECT * FROM human")
-        self.__table.setColumnCount(len(col_names))        
+        self.__table.setColumnCount(len(col_names))
         self.__table.setRowCount(len(rows))
         self.__table.setHorizontalHeaderLabels(col_names)
-                    
+
         if (rows != None):
             for (x, row) in enumerate(rows):
                 for (y, item) in enumerate(row):
                     self.__table.setItem(x, y, QTableWidgetItem("%s" % item if (item != None) else None))
 
-### PRIVATE FUNCTION
+                ### PRIVATE FUNCTION
 
     def __add_top_panel(self):
         self.__db_name_le = QLineEdit()
@@ -71,28 +71,27 @@ class MainWindow(QMainWindow):
         db_layout.addWidget(QLabel("База данных"))
         db_layout.addWidget(self.__db_name_le)
         self.__grid.addLayout(db_layout, 0, 0)
-        
+
         self.__user_le = QLineEdit()
         user_layout = QHBoxLayout()
         user_layout.addWidget(QLabel("Пользователь"))
         user_layout.addWidget(self.__user_le)
         self.__grid.addLayout(user_layout, 0, 1)
-        
+
         self.__pass_le = QLineEdit()
         self.__pass_le.setEchoMode(QLineEdit.Password)
         pass_layout = QHBoxLayout()
         pass_layout.addWidget(QLabel("Пароль"))
         pass_layout.addWidget(self.__pass_le)
         self.__grid.addLayout(pass_layout, 0, 2)
-        
+
         self.__host_le = QLineEdit()
         host_layout = QHBoxLayout()
         host_layout.addWidget(QLabel("Хост"))
         host_layout.addWidget(self.__host_le)
         self.__grid.addLayout(host_layout, 0, 3)
-        
+
         connect_btn = QPushButton("Подключить")
         self.__grid.addWidget(connect_btn, 0, 4)
-        
+
         QObject.connect(connect_btn, SIGNAL("pressed()"), self.connect)
-        
