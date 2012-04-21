@@ -1,9 +1,9 @@
 """ MainWindow contains general window which is entry point for user 
 """
 import department.database as db
+from functools import partial
 from PyQt4.QtGui import *
 from PyQt4.QtCore import SIGNAL, QObject
-
 
 class MainWindow(QMainWindow):
 
@@ -21,32 +21,31 @@ class MainWindow(QMainWindow):
         centralWidget.setLayout(self.__grid)
         self.setCentralWidget(centralWidget)
 
-        # add top panel
-        self.__add_top_panel()
+        self.__person_ls = QListView()
+        self.__person_ls.setModel(QStringListModel(["One", "Two", "Three"]))
+        self.__grid.addWidget(self.__person_ls, 0, 0, 3, 1)
 
         # main table                
         self.__table = QTableWidget()
         self.__table.verticalHeader().setVisible(False)
-        self.__grid.addWidget(self.__table, 1, 0, 1, 5)
 
 
     def closeEvent(self, event):
-        db.close(db.database())
+        db.close(self.__con())
 
     ### SLOTS
 
     def connect(self):
-        db.connect(db.setup(db.database(),
-            dbname = self.__db_name_le.text(),
-            #user = self.__user_le.text(),
-            #password = self.__pass_le.text(),
-            #host self.__host_le.text()
-        ))
+        self.__conn = db.connect(dbname=self.__db_name_le.text()
+                                #user = self.__user_le.text(),
+                                #password = self.__pass_le.text(),
+                                #host self.__host_le.text()
+        )
 
-        if (not db.is_connected(db.database())):
+        if (not db.is_connected(self.__conn())):
             return
 
-        do_query = db.do_query(db.database())
+        do_query = partial(db.do_query(self.__conn()))
 
         columns = do_query("select column_name from information_schema.columns where table_name='{0}';".format("human"))
         col_names = []

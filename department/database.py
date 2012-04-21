@@ -1,89 +1,84 @@
 import logging
 import psycopg2
+from psycopg2 import ProgrammingError
 
-class database:
-    def __init__(self):
-        database.connection = None
-        database.cursor = None
-        database.dbname = None
-        database.user = None
-        database.host = None
-        database.password = None
-        logging.basicConfig(filename="LOG", format="%(asctime)s %(message)s", level=logging.INFO)
-
-
-def setup(database, **kwargs):
-    if is_connected(database):
-        close(database)
-    database.dbname = kwargs.get('dbname', 'default')
-    database.user = kwargs.get('user', 'postgres')
-    database.host = kwargs.get('host', 'localhost')
-    database.password = kwargs.get('password', 'postgres')
-    return database
-
-def connect(database):
+def connect(**kwargs):
+    """Connect to db. Makes log file LOG_DBNAME"""
+    connector = None
+    logging.basicConfig(filename="LOG_{}".format(kwargs.get('dbname', 'default')),
+                        format="%(asctime)s %(message)s", level=logging.INFO)
     try:
-        database.connection = psycopg2.connect(
+        connector = psycopg2.connect(
             "dbname='{dbname}' user='{user}' host='{host}' password='{password}'"
             .format(
-                dbname = database.dbname,
-                user = database.user,
-                host = database.host,
-                password = database.password
+                dbname = kwargs.get('dbname', 'default'),
+                user = kwargs.get('user', 'postgres'),
+                host = kwargs.get('host', 'localhost'),
+                password = kwargs.get('password', 'postgres')
             ))
-        logging.info("Connected to \"{}\"".format(database.dbname))
-        database.cursor = database.connection.cursor()
-        return True
+        logging.info("Connected with \"{}\"".format(kwargs.get('user', 'postgres')))
     except:
-        logging.error("Can't connect to \"{}\"".format(database.dbname))
+        logging.error("Can't connect with \"{}\"".format(kwargs.get('user', 'postgres')))
+
+    def get_connector():
+        return connector
+    return get_connector
+
+def is_connected(connector):
+    """Test connection. If it exists returns True or False otherwise"""
+    return connector != None
+
+def close(connector):
+    """Commit changes to server. and close connection Return True if succeed or False otherwise"""
+    commit(connector)
+    try:
+        connector.close()
+        logging.info("Connection closed\n\n")
+        return True
+    except Exception as e:
+        logging.error("Something wrong during close: {}".format(e))
         return False
 
-def close(database):
-    database.connection.close()
-    logging.info("Connection \"{}\" closed".format(database.dbname))
+def commit(connector):
+    """Commit changes to server"""
+    try:
+        connector.commit()
+        logging.info("Committed changes")
+        return True
+    except:
+        logging.error("Committed failed")
+        return False
 
-def commit(database):
-    database.connection.commit()
-    logging.info("Committed changes in \"{}\"".format(database.dbname))
+def rollback(connector):
+    """Discard all changes. Return None"""
+    try:
+        connector.rollback()
+        logging.info("Rollback succeed")
+        return True
+    except:
+        logging.error("Rollback failed")
+        return False
 
-def rollback(database):
-    database.connection.rollback()
-    logging.info("Rollback in \"{}\"".format(database.dbname))
+def do_query(connector, query):
+    """Execute query with connector. Return list of values if query has response, otherwise return None"""
+    cursor = connector.cursor()
+    try:
+        cursor.execute(query)
+        logging.info("Execute query \"{}\"".format(query))
+    except ProgrammingError as e:
+        logging.error("Can't execute query \"{}\"\n\tbecause of: \"{}\"".format(query, e))
+    finally:
+        logging.info(connector.notices)
 
+    return cursor.fetchall() if cursor.rowcount != 1 else None
 
-def is_connected(database):
-    return database.cursor is not None
-
-def get_cursor(database):
-    if (not is_connected(database)):
-        connect(database)
-    return database.cursor
-
-def do_query(database):
-    def do_execute(query):
-        try:
-            get_cursor(database).execute(query)
-            logging.info("Execute query \"{0}\"".format(query))
-            return get_cursor(database).fetchall()
-        except Exception as e:
-            logging.error("Can't execute query \"{}\"\n\tbecause of: \"{}\""
-            .format(query, e))
-            return None
-    return do_execute
-
-def execute(database, query):
-    return do_query(database)(query)
-
-def select(database, table, *args):
+def gen_select(table, *args):
+    """Generate String for query of selecting columns *args in table"""
     values = list(args)
-    for i in range(0, len(args)):
+    for i in range(0, len(args) - 1):
         values.insert(2 * i + 1, ", ")
-    return do_query(database)("SELECT {} FROM {}".format("".join(values), table))
+    return "SELECT {} FROM {}".format("".join(values), table)
 
-def select_all(database, table):
-    return execute(database, "SELECT * FROM {}".format(table))
-
-if __name__ == "__main__":
-    make_query = do_query(setup(database(), dbname = "test_db"))
-    print(make_query("SELECT * FROM human"))
-    close(database())
+def gen_select_all(table):
+    """Generate String for query of selecting all rows from table"""
+    return "SELECT * FROM {}".format(table)

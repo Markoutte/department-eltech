@@ -1,30 +1,40 @@
 import unittest
 from department.database import *
+from functools import partial
 
 class Test(unittest.TestCase):
 
     def setUp(self):
-        self.__db = setup(database(), dbname="test_db")
-        self.assertTrue(connect(self.__db), "Something wrong")
-        
+        self.get_connector = connect(dbname="test_db")
+        self.do_query = partial(do_query, self.get_connector())
+
     def tearDown(self):
-        close(self.__db)
+        close(self.get_connector())
 
     def test_is_connected(self):
-        self.assertTrue(is_connected(self.__db))
-        self.assertFalse(not is_connected(self.__db))
+        self.assertTrue(is_connected(self.get_connector()), "Something wrong")
+
+    def test_rollback_and_commit(self):
+        self.assertTrue(commit(self.get_connector()))
+        self.assertTrue(rollback(self.get_connector()))
         
     def test_num_of_entries(self):
-        list = select_all(self.__db, "human")
-        self.assertEqual(3, len(list), None)
+        list = self.do_query(gen_select_all("human"))
+        self.assertEqual(3, len(list))
 
     def test_broken_connection(self):
-        execute(self.__db, "INSERT INTO human DEFAULT VALUES")
-        values = select_all(self.__db, "human")
-        self.assertEqual(4, len(values), None)
-        rollback(self.__db)
-        values = select_all(self.__db, "human")
-        self.assertEqual(3, len(values), None)
+        self.do_query("INSERT INTO human DEFAULT VALUES")
+        values = self.do_query(gen_select_all("human"))
+        self.assertEqual(4, len(values))
+        rollback(self.get_connector())
+        values = self.do_query(gen_select_all("human"))
+        self.assertEqual(3, len(values))
+
+    def test_gen(self):
+        self.assertEqual(gen_select("human", "id"), "SELECT id FROM human")
+        self.assertEqual(gen_select("human", "id", "name"), "SELECT id, name FROM human")
+        self.assertEqual(gen_select("human", "id", "name", "phone"), "SELECT id, name, phone FROM human")
+        self.assertEqual(gen_select_all("human"), "SELECT * FROM human")
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
