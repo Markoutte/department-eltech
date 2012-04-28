@@ -1,5 +1,6 @@
 import unittest
 from department.database import *
+from department.utils import gen_select, gen_select_all
 from functools import partial
 
 class Test(unittest.TestCase):

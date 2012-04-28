@@ -1,9 +1,12 @@
-""" MainWindow contains general window which is entry point for user 
+
+""" MainWindow contains general window which is entry point for user
 """
-import department.database as db
+#from department.database import Connection, close
+from department.gui.widgets import PersonListView
+from department.gui.widgets import Information
 from functools import partial
 from PyQt4.QtGui import *
-from PyQt4.QtCore import SIGNAL, QObject
+import PyQt4.QtCore as core
 
 class MainWindow(QMainWindow):
 
@@ -21,17 +24,22 @@ class MainWindow(QMainWindow):
         centralWidget.setLayout(self.__grid)
         self.setCentralWidget(centralWidget)
 
-        self.__person_ls = QListView()
-        self.__person_ls.setModel(QStringListModel(["One", "Two", "Three"]))
-        self.__grid.addWidget(self.__person_ls, 0, 0, 3, 1)
+        # Set a list view of persons
+        person_ls = PersonListView()
+        self.__grid.addWidget(person_ls, 0, 0, 1, 1)
+        self.__grid.setColumnStretch(0, 1)
 
-        # main table                
-        self.__table = QTableWidget()
-        self.__table.verticalHeader().setVisible(False)
+        # Set full info about person
+        info_tb = Information()
+        self.__grid.addWidget(info_tb, 0, 1, 1, 1, core.Qt.AlignTop)
+        self.__grid.setColumnStretch(1, 3)
+
+        core.QObject.connect(person_ls, core.SIGNAL('personSelected(int)'),
+                        info_tb, core.SLOT('updateInfo(int)'))
 
 
     def closeEvent(self, event):
-        db.close(self.__con())
+        pass
 
     ### SLOTS
 

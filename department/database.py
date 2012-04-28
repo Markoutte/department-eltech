@@ -16,7 +16,10 @@ def connect(**kwargs):
                 host = kwargs.get('host', 'localhost'),
                 password = kwargs.get('password', 'postgres')
             ))
-        logging.info("Connected with \"{}\"".format(kwargs.get('user', 'postgres')))
+        logging.info("Connected to {} with \"{}\"".format(
+            kwargs.get('dbname', 'default'),
+            kwargs.get('user', 'postgres'))
+        )
     except:
         logging.error("Can't connect with \"{}\"".format(kwargs.get('user', 'postgres')))
 
@@ -43,10 +46,10 @@ def commit(connector):
     """Commit changes to server"""
     try:
         connector.commit()
-        logging.info("Committed changes")
+        logging.info("Committes succeed")
         return True
     except:
-        logging.error("Committed failed")
+        logging.error("Committes failed")
         return False
 
 def rollback(connector):
@@ -62,23 +65,41 @@ def rollback(connector):
 def do_query(connector, query):
     """Execute query with connector. Return list of values if query has response, otherwise return None"""
     cursor = connector.cursor()
+    list = None
     try:
         cursor.execute(query)
         logging.info("Execute query \"{}\"".format(query))
+        list = cursor.fetchall()
     except ProgrammingError as e:
         logging.error("Can't execute query \"{}\"\n\tbecause of: \"{}\"".format(query, e))
+        return None
     finally:
         logging.info(connector.notices)
 
-    return cursor.fetchall() if cursor.rowcount != 1 else None
+    return list
 
-def gen_select(table, *args):
-    """Generate String for query of selecting columns *args in table"""
-    values = list(args)
-    for i in range(0, len(args) - 1):
-        values.insert(2 * i + 1, ", ")
-    return "SELECT {} FROM {}".format("".join(values), table)
 
-def gen_select_all(table):
-    """Generate String for query of selecting all rows from table"""
-    return "SELECT * FROM {}".format(table)
+# Connection class
+
+class Connection(object):
+    __con = None
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(Connection, cls).__new__(cls, *args, **kwargs)
+        return  cls._instance
+
+    def init(self, **kwargs):
+        self.__con = (connect(**kwargs))
+        if is_connected(self.__con()):
+            return True
+        else:
+            self.__con = None
+            return False
+
+    def exec(self, query):
+        return do_query(self.__con(), query)
+
+    def close(self):
+        close(self.__con())
