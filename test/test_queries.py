@@ -1,6 +1,7 @@
 import unittest
 import department.database as database
 import department.database.queries as query
+import re
 
 class Test(unittest.TestCase):
 
@@ -11,7 +12,12 @@ class Test(unittest.TestCase):
         database.close()
 
     def test_persons_list(self):
-        print(query.get_persons_list())
+        response = query.get_persons_list('п')
+        print(response)
+        self.assertIsNotNone(response)
+        self.assertTrue(len(response) > 0)
+        # checks that string like this: 'Family N.M.'
+        self.assertRegexpMatches(response[0], r'\w+\s(\w\.){2}')
 
     def test_person_id(self):
         print(query.get_person_by_id(1))

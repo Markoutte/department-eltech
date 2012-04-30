@@ -1,15 +1,18 @@
 import psycopg2 as database
+import logging as _log
+
+log = _log.getLogger()
 
 def execute(query):
     cursor = Connection()._get_cursor()
     try:
         cursor.execute(query)
+        log.info(query)
     except database.ProgrammingError as e:
-        print('Cannot execute, because of ', e)
+        log.exception('Cannot execute, because of ', e)
     return cursor
 
 def open(**kwargs):
-    con = None
     try:
         con = database.connect(
             "dbname='{dbname}' user='{user}' host='{host}' password='{password}' port='{port}'"
@@ -22,11 +25,11 @@ def open(**kwargs):
             )
         )
     except database.Error as e:
-        print('Cannot connect, ', e)
+        log.warn('Cannot connect, ', e)
         return False
 
     Connection().set(con)
-    print('Connection established')
+    log.info('Connection established ({})'.format(kwargs.get('dbname', 'default')))
     return True
 
 def is_connected():
@@ -37,7 +40,7 @@ def close():
         return
     Connection().get().close()
     Connection()._clear()
-    print('Connection closed')
+    log.info('Connection closed')
 
 class Connection:
     __con = None

@@ -13,7 +13,7 @@ class MainWindow(ui.QMainWindow):
         self.setWindowTitle("Кадровый учёт")
 
     def __compose(self):
-        '''Compose all widgets into one window'''
+        """Compose all widgets into one window"""
         # create two panels
         left_panel = ui.QVBoxLayout()
         right_panel = ui.QVBoxLayout()
@@ -23,15 +23,12 @@ class MainWindow(ui.QMainWindow):
         left_panel.addWidget(search_bx)
         self.__persons_ls = PersonListView()
         left_panel.addWidget(self.__persons_ls)
-        add_new_person_btn = ui.QPushButton() # TODO connect it
+        add_new_person_btn = ui.QPushButton('+ сотрудник') # TODO connect it
         left_panel.addWidget(add_new_person_btn)
-        set_position_btn = ui.QPushButton() # TODO connect it
-        left_panel.addWidget(set_position_btn)
-        settings_btn = ui.QPushButton() # TODO connect & stylish it
-        left_panel.addWidget(settings_btn)
+        set_position_btn = ui.QPushButton('+ должность') # TODO connect it
 
         #compose right panel
-        self.__full_name_lbl = ui.QLabel() # TODO set some style
+        self.__full_name_lbl = ui.QLabel()
         right_panel.addWidget(self.__full_name_lbl)
         self.__pos_tbl = ui.QTableView() # TODO create corresponding widget
         right_panel.addWidget(self.__pos_tbl)
@@ -40,12 +37,11 @@ class MainWindow(ui.QMainWindow):
 
         # connect signals
         core.QObject.connect(search_bx, core.SIGNAL('textChanged (const QString&)'),
-                             self, core.SIGNAL('searchPerson(const QString&)'))
+                             self.__persons_ls, core.SLOT('update(const QString&)'))
         core.QObject.connect(add_new_person_btn, core.SIGNAL('clicked()'), self, core.SIGNAL('addNewPerson()'))
         core.QObject.connect(set_position_btn, core.SIGNAL('clicked()'), self, core.SIGNAL('setPosition()'))
-        core.QObject.connect(settings_btn, core.SIGNAL('clicked()'), self, core.SIGNAL('showSettings()'))
-        core.QObject.connect(self.__persons_ls, core.SIGNAL('personSelected(QString)'),
-                             self, core.SLOT('set_full_name(QString)'))
+        core.QObject.connect(self.__persons_ls, core.SIGNAL('personSelected(const QString&)'),
+                             self, core.SLOT('set_full_name(const QString&)'))
 
         # compose all in one
         main_layout = ui.QHBoxLayout()
@@ -59,7 +55,7 @@ class MainWindow(ui.QMainWindow):
         left_panel.setMargin(5)
         right_panel.setMargin(5)
 
-    @core.pyqtSlot('QString')
+    @core.pyqtSlot('const QString&')
     def set_full_name(self, fullname):
         '''This slot sets full name into label when signal arrives'''
         self.__full_name_lbl.setText('<font size=18>{}</font>'.format(fullname))
