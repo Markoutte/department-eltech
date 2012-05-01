@@ -1,5 +1,5 @@
-import PyQt4.QtGui as ui
-import PyQt4.QtCore as core
+import PySide.QtGui as ui
+import PySide.QtCore as core
 import department.database as database
 
 class Application(ui.QApplication):

@@ -1,8 +1,7 @@
-import PyQt4.QtGui as ui
-import PyQt4.QtCore as core
+import PySide.QtGui as ui
+import PySide.QtCore as core
 import department.database as database
 import department.database.queries as query
-from PyQt4.QtCore import QModelIndex
 
 class PersonListView(ui.QListView):
     """
@@ -22,7 +21,7 @@ class PersonListView(ui.QListView):
             self, core.SLOT('personClicked(const QModelIndex&)')
         )
 
-    @core.pyqtSlot('const QString&')
+    @core.Slot('const QString&')
     def update(self, begin):
         """
         update widget with list of persons from db,
@@ -39,7 +38,7 @@ class PersonListView(ui.QListView):
             else:
                 self.__model.setStringList([])
 
-    @core.pyqtSlot('const QModelIndex&')
+    @core.Slot('const QModelIndex&')
     def personClicked(self, index):
         """
         retransmit signal with chosen id from widget with
