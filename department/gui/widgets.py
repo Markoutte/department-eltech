@@ -2,6 +2,7 @@ import PySide.QtGui as ui
 import PySide.QtCore as core
 import department.database as database
 import department.database.queries as query
+import department.gui.form as _form
 
 class PersonListView(ui.QListView):
     """
@@ -16,10 +17,14 @@ class PersonListView(ui.QListView):
         super(PersonListView, self).__init__(parent)
         self.__model = ui.QStringListModel(None)
         self.setModel(self.__model)
+        self.setSelectionMode(self.SingleSelection)
+        self.setEditTriggers(self.NoEditTriggers)
 
         self.connect(self, core.SIGNAL('clicked(const QModelIndex&)'),
             self, core.SLOT('personClicked(const QModelIndex&)')
         )
+        
+        self._form = _form.Form(self.parent())
 
     @core.Slot('const QString&')
     def update(self, begin):
@@ -32,8 +37,9 @@ class PersonListView(ui.QListView):
         if begin == '':
             self.__model.setStringList([])
         elif database.is_connected():
-            response = query.get_persons_list(begin)
-            if response is not None:
+            self.__ids = query.get_persons_list_of_id(begin)
+            if self.__ids is not None:
+                response = query.get_persons_list(self.__ids)
                 self.__model.setStringList(response)
             else:
                 self.__model.setStringList([])
@@ -44,5 +50,24 @@ class PersonListView(ui.QListView):
         retransmit signal with chosen id from widget with
         argument of fullname
         """
-        self.emit(core.SIGNAL('personSelected(QString)'),
-            query.get_person_by_id(index.row() + 1)[1])
+        self.emit(core.SIGNAL('personSelected(int)'),
+            query.get_person_id(self.__ids[index.row()]))
+        
+    def contextMenuEvent(self, event):
+        menu = ui.QMenu()
+        menu.addAction('Добавить запись', self._form, core.SLOT('show()'))
+        if self.selectedIndexes() != []:
+            menu.addAction('Редактировать', self, core.SLOT('edit_record()'))            
+        menu.exec_(event.globalPos())
+        
+    @core.Slot()
+    def edit_record(self):
+        response = query.get_full_info(query.get_person_id((self.selectedIndexes()[0].row() + 1)))[0]
+        data = {}
+        data['secondname'] = response[1]
+        data['firstname'] = response[2]
+        data['middlename'] = response[3]
+        self._form.load(data)
+    
+        
+        

@@ -1,39 +1,56 @@
 import department.database as _db
 
-def _to_str_list(list):
+def _to_str_list(ls):
     """
-        get from list of tuple a string list,
-        where values are first in tuple;
-        i.e. [(1, 2), (3, 4)] → ["1", "3"]
+    get from list of tuple a string list,
+    where values are first in tuple;
+    i.e. [(1, 2), (3, 4)] → ["1", "3"]
     """
-    if len(list) > 0:
+    if len(ls) > 0:
         values = []
-        for tuple in filter(lambda l : len(l) > 0, list):
-            values.append(str(tuple[0]))
+        for item in filter(lambda l : len(l) > 0, ls):
+            values.append(str(item[0]))
         return values
 
-def get_persons_list(cut=''):
+def get_persons_list_of_id(search_string):
     """
-    get list of persons, i.e. ["McDon A.B.", "Carlo S.B."]
-    if <i>cut</i> is defined return list with names starts with it
+    returns list of employees' ids are started with <i>search_string</i>
     """
-    pers_ls = "(SELECT FORMAT('%s %s.%s.', " \
-                       "SURNAME, " \
-                       "SUBSTRING(NAME FROM '^.'), " \
-                       "SUBSTRING(MIDDLE_NAME FROM '^.')" \
-                       ") AS FULLNAME " \
-                       "FROM PERSONS('{str}') ) AS PERS_LS" \
-                        .format(str = str.capitalize(cut))
+    pers_ls = ("(SELECT ID FROM GET_PERSONS(INITCAP('{str}')) ) AS PERS_LS"
+                        .format(str = search_string))
     cursor = _db.execute("SELECT * FROM {};".format(pers_ls)
     ) # TODO fix bug with capitalizing names (from db?)
     return _to_str_list(cursor.fetchall())
+     
 
-def get_person_by_id(person_id):
+def get_persons_list(id_list=''):
+    """
+    get list of persons, i.e. ["McDon Ann Ber", "Carlo San Kole"]
+    if <i>id_list</i> is defined return list with names starts with it
+    """
+    pers_ls = ("(SELECT FORMAT('%s %s %s', "
+                       "SURNAME, "
+                       "NAME, "
+                       "MIDDLE_NAME"
+                       ") AS FULLNAME "
+                       "FROM EMPLOYEE WHERE ID IN ({})"
+                ")"
+                        .format(', '.join(id_list)))
+    cursor = _db.execute(pers_ls)
+    return _to_str_list(cursor.fetchall())
+
+def get_person_id(index):
     """
     get couple — id & fullname of person by his number in list
     """
-    cursor = _db.execute("SELECT ID, FORMAT('%s %s %s ', " \
-                            "SURNAME, NAME, MIDDLE_NAME" \
-                          ") FROM PERSONS('') WHERE ROW={id};"
-                         .format(id = person_id))
-    return cursor.fetchone()
+    cursor = _db.execute("SELECT ID FROM GET_PERSONS('') WHERE ROW={id};"
+                         .format(id = index))
+    return cursor.fetchone()[0]
+
+def get_full_info(person_id):
+    """
+    get whole information about employee in list by his id 
+    """
+    cols = 'ID, SURNAME, NAME, MIDDLE_NAME'
+    cursor = _db.execute("SELECT {} FROM EMPLOYEE WHERE ID = {}".format(cols, person_id))
+    return cursor.fetchall()

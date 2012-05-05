@@ -1,7 +1,6 @@
 import unittest
 import department.database as database
 import department.database.queries as query
-import re
 
 class Test(unittest.TestCase):
 

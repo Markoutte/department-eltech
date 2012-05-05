@@ -1,88 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>mainwindow</class>
- <widget class="QWidget" name="mainwindow">
+ <class>central_widget</class>
+ <widget class="QWidget" name="central_widget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>454</height>
+    <width>970</width>
+    <height>822</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>600</width>
-    <height>0</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <layout class="QHBoxLayout" name="central_layout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="search_layout">
      <item>
-      <layout class="QVBoxLayout" name="left_panel" stretch="1,0,0">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMaximumSize</enum>
+      <widget class="QComboBox" name="switch_bx">
+       <property name="enabled">
+        <bool>true</bool>
        </property>
-       <item>
-        <widget class="QLineEdit" name="search_bx"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="add_new_person_btn">
-         <property name="text">
-          <string>+ сотрудник</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+      </widget>
      </item>
      <item>
-      <layout class="QVBoxLayout" name="right_panel" stretch="0,0">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetMaximumSize</enum>
+      <widget class="QLineEdit" name="search_bx"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="find_btn">
+       <property name="text">
+        <string>Найти</string>
        </property>
-       <item>
-        <widget class="QLabel" name="fullname_lbl">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="info_panel">
+     <item>
+      <widget class="QLabel" name="fullname_lbl">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
