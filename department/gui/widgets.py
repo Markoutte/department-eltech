@@ -2,7 +2,7 @@ import PySide.QtGui as ui
 import PySide.QtCore as core
 import department.database as database
 import department.database.queries as query
-import department.gui.form as _form
+import department.gui.form as _formview
 
 class PersonListView(ui.QListView):
     """
@@ -23,8 +23,6 @@ class PersonListView(ui.QListView):
         self.connect(self, core.SIGNAL('clicked(const QModelIndex&)'),
             self, core.SLOT('personClicked(const QModelIndex&)')
         )
-        
-        self._form = _form.Form(self.parent())
 
     @core.Slot('const QString&')
     def update(self, begin):
@@ -55,19 +53,26 @@ class PersonListView(ui.QListView):
         
     def contextMenuEvent(self, event):
         menu = ui.QMenu()
-        menu.addAction('Добавить запись', self._form, core.SLOT('show()'))
+        menu.addAction('Добавить запись', self, core.SLOT('add_record()'))
         if self.selectedIndexes() != []:
             menu.addAction('Редактировать', self, core.SLOT('edit_record()'))            
         menu.exec_(event.globalPos())
         
     @core.Slot()
+    def add_record(self):
+        self._form = _formview.Form(self.parent())
+        self._form.show()
+        
+    @core.Slot()
     def edit_record(self):
-        response = query.get_full_info(query.get_person_id((self.selectedIndexes()[0].row() + 1)))[0]
+        self._form = _formview.Form(self.parent())
+        response = query.get_full_info(self.__ids[self.selectedIndexes()[0].row()])[0]
         data = {}
         data['secondname'] = response[1]
         data['firstname'] = response[2]
         data['middlename'] = response[3]
         self._form.load(data)
+        self._form.show()
     
         
         

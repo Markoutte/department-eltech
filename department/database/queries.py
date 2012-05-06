@@ -54,3 +54,18 @@ def get_full_info(person_id):
     cols = 'ID, SURNAME, NAME, MIDDLE_NAME'
     cursor = _db.execute("SELECT {} FROM EMPLOYEE WHERE ID = {}".format(cols, person_id))
     return cursor.fetchall()
+
+def get_positions_list():
+    cursor = _db.execute("SELECT CODE, NAME FROM POSITION")
+    return cursor.fetchall()
+
+CATEGORY = 0;
+PROFESSION = 1;
+
+def get_strlist_of(choose):
+    if choose == CATEGORY:
+        cursor = _db.execute("SELECT DISTINCT prof_cat FROM EMPLOYEE")
+    elif choose == PROFESSION:
+        cursor = _db.execute("SELECT DISTINCT prof_name FROM EMPLOYEE")
+    return _to_str_list(cursor.fetchall())
+    

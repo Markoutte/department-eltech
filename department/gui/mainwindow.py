@@ -30,7 +30,6 @@ class MainWindow(ui.QMainWindow):
         central_layout.insertWidget(1, self.__persons_ls)
 
         # set connection
-
         core.QObject.connect(self._ui.find_btn, core.SIGNAL('clicked()'),
             self, core.SLOT('send_query()'))
         core.QObject.connect(self.__persons_ls, core.SIGNAL('personSelected(int)'),
