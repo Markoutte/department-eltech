@@ -1,4 +1,5 @@
 import department.database as _db
+from email.encoders import _qencode
 
 def _to_str_list(ls):
     """
@@ -97,4 +98,35 @@ def get_strlist_of(choose):
     elif choose == PROFESSION:
         cursor = _db.execute("SELECT DISTINCT prof_name FROM EMPLOYEE")
     return _to_str_list(cursor.fetchall())
+    
+def add_employee(**kwargs):
+    cursor = _db.execute("SELECT * FROM new_contract('{}', '{}', '{}')"
+                         .format(kwargs['accept'], kwargs['expires'], kwargs['type']))
+    contract_id = str(cursor.fetchone()[0]);
+    errfields=[]
+    addval = lambda x: kwargs[x] if kwargs[x] != '' else errfields.append(x);
+    values = [addval('surname'), 
+              addval('name'), 
+              addval('middle_name'),
+              addval('sex'), 
+              addval('diploma'), 
+              addval('exp_date'),
+              addval('birth_date'), 
+              addval('passport'), 
+              addval('address'),
+              addval('phone'), 
+              addval('prof_name'), 
+              addval('prof_cat'),
+              contract_id, 
+              addval('marital')]
+    if errfields != []:
+        _db.rollback("Empty fiels (", ", ".join(errfields), ")")
+        return errfields
+    
+    empl_val = "'" + "', '".join(values) + "'"
+    query = ("INSERT INTO employee(surname, name, middle_name, sex, " 
+             "diploma, exp_date, birth_date, passport_id, address, phone, "
+             "prof_name, prof_cat, contract_id, marital) VALUES ({})".format(empl_val))
+    _db.execute(query)
+    _db.commit()
     

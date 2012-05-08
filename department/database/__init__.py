@@ -10,6 +10,7 @@ def execute(query):
         log.info(query)
     except database.ProgrammingError as e:
         log.exception('Cannot execute, because of ', e)
+    log.info(Connection().get().notices)
     return cursor
 
 def open(**kwargs):
@@ -35,6 +36,14 @@ def open(**kwargs):
 def is_connected():
     return Connection().get() is not None
 
+def commit():
+    Connection().get().commit()
+    log.info('Committed')
+    
+def rollback(*args):
+    log.warn('Rollback {}'.format(''.join(args)))
+    Connection().get().rollback()
+    
 def close():
     if not is_connected():
         return

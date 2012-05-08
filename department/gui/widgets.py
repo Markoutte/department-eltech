@@ -36,6 +36,7 @@ class PersonListView(ui.QListView):
             self.__model.setStringList([])
         elif database.is_connected():
             self.__ids = query.get_persons_list_of_id(begin)
+            print(self.__ids)
             if self.__ids is not None:
                 response = query.get_persons_list(self.__ids)
                 self.__model.setStringList(response)

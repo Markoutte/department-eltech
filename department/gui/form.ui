@@ -26,7 +26,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="2" column="1">
+   <item row="4" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -39,8 +39,55 @@
      </property>
     </spacer>
    </item>
+   <item row="5" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ok_btn">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Добавить</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save_btn">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancel_btn">
+       <property name="text">
+        <string>Отменить</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="1" column="1">
-    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,2,2,8">
+    <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,2,2,8">
      <property name="horizontalSpacing">
       <number>20</number>
      </property>
@@ -174,23 +221,6 @@
          <width>120</width>
          <height>16777215</height>
         </size>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="3">
-      <widget class="QDateEdit" name="sign_date_edit">
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="date">
-        <date>
-         <year>2012</year>
-         <month>1</month>
-         <day>1</day>
-        </date>
        </property>
       </widget>
      </item>
@@ -515,6 +545,12 @@
      </item>
      <item row="19" column="0" colspan="3">
       <widget class="QTableWidget" name="position_table">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -664,54 +700,113 @@
        </item>
       </layout>
      </item>
+     <item row="5" column="3">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QDateEdit" name="sign_date_edit">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="date">
+          <date>
+           <year>2012</year>
+           <month>1</month>
+           <day>1</day>
+          </date>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="contract_type_cmb">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="maxCount">
+          <number>20</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>постоянный</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>временный</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
     </layout>
    </item>
    <item row="3" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="ok_btn">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Добавить</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="save_btn">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Сохранить</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="cancel_btn">
-       <property name="text">
-        <string>Отменить</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QLabel" name="err">
+     <property name="styleSheet">
+      <string notr="true">color: red; 
+background: #FFFEDE; 
+border: 1px solid #FFC000;
+padding: 5px;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>secondname_le</tabstop>
+  <tabstop>firstname_le</tabstop>
+  <tabstop>middlename_le</tabstop>
+  <tabstop>birth_date_edit</tabstop>
+  <tabstop>male_rb</tabstop>
+  <tabstop>female_rb</tabstop>
+  <tabstop>marital_cmb</tabstop>
+  <tabstop>diploma_cmb</tabstop>
+  <tabstop>expa_date_edit</tabstop>
+  <tabstop>cat_le</tabstop>
+  <tabstop>prof_le</tabstop>
+  <tabstop>position</tabstop>
+  <tabstop>part_cmb</tabstop>
+  <tabstop>add_position_btn</tabstop>
+  <tabstop>ser_pass_le</tabstop>
+  <tabstop>no_pass_le</tabstop>
+  <tabstop>contract_id</tabstop>
+  <tabstop>sign_date_edit</tabstop>
+  <tabstop>contract_type_cmb</tabstop>
+  <tabstop>exp_date_edit</tabstop>
+  <tabstop>add_exp_date</tabstop>
+  <tabstop>phone_le</tabstop>
+  <tabstop>address_te</tabstop>
+  <tabstop>cancel_btn</tabstop>
+  <tabstop>ok_btn</tabstop>
+  <tabstop>position_table</tabstop>
+  <tabstop>remove_position_btn</tabstop>
+  <tabstop>save_btn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

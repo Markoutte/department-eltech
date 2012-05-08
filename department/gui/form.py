@@ -37,6 +37,9 @@ class Form(ui.QMainWindow):
         # buttons
         self._ui.save_btn.setVisible(False)
         
+        # err
+        self._ui.err.setVisible(False)
+        
         # connections        
         core.QObject.connect(self._sex, core.SIGNAL('buttonClicked (int)'),
                              self, core.SLOT('sexChanged(int)'))
@@ -48,6 +51,8 @@ class Form(ui.QMainWindow):
                              self, core.SLOT('remove_position()'))
         core.QObject.connect(self._ui.cancel_btn, core.SIGNAL('clicked()'),
                              self, core.SLOT('close()'))
+        core.QObject.connect(self._ui.ok_btn, core.SIGNAL('clicked()'),
+                             self, core.SLOT('add_employee()'))
         
     @core.Slot('map')
     def load(self, data):
@@ -67,7 +72,7 @@ class Form(ui.QMainWindow):
         gui.address_te.setPlainText(data['address'])
         gui.phone_le.setText(data['phone'])
         gui.cat_le.setText(data['category'])
-        gui.prof_le.setText(data['profession'])        
+        gui.prof_le.setText(data['profession'])
         # complete table
         for i, part in enumerate(data['part']):
             if part == None:
@@ -79,6 +84,7 @@ class Form(ui.QMainWindow):
         gui.ser_pass_le.setText(passport[0])
         gui.no_pass_le.setText(passport[1])
         gui.contract_id.setText(str(data['contract']))
+        gui.contract_type_cmb.setEditText(data['contract_type'])
         gui.sign_date_edit.setDate(core.QDate.fromString(data['accept'], 'yyyy.M.d'))
         gui.exp_date_edit.setDate(core.QDate.fromString(data['expires'], 'yyyy.M.d'))
             
@@ -117,3 +123,30 @@ class Form(ui.QMainWindow):
         table = self._ui.position_table
         row = table.currentRow()
         table.removeRow(row)
+        
+    @core.Slot()
+    def add_employee(self):
+        ui = self._ui
+        err = _query.add_employee(
+                            surname = ui.secondname_le.text(), 
+                            name = ui.firstname_le.text(), 
+                            middle_name = ui.middlename_le.text(),
+                            sex = {1:'m', 2:'f'}.get(self._sex.checkedId()), 
+                            diploma = ui.diploma_cmb.currentText(), 
+                            exp_date = ui.expa_date_edit.date().toString('yyyy.MM.dd'),
+                            birth_date = ui.birth_date_edit.date().toString('yyyy.MM.dd'), 
+                            passport = '{} {}'.format( ui.ser_pass_le.text(),  ui.no_pass_le.text()), 
+                            address = ui.address_te.toPlainText(),
+                            phone = ui.phone_le.text(), 
+                            prof_cat = ui.cat_le.text(), 
+                            prof_name = ui.prof_le.text(), 
+                            marital = str(ui.marital_cmb.currentIndex()),
+                            
+                            accept = ui.sign_date_edit.date().toString('yyyy.MM.dd'),
+                            expires = ui.exp_date_edit.date().toString('yyyy.MM.dd'),
+                            type = ui.contract_type_cmb.currentText())
+        if err is not None:
+            self._ui.err.setVisible(True)
+            ui.err.setText("Не заполненые поля: {}".format(', '.join(err)))
+            return
+        self.close()

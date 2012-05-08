@@ -17,6 +17,8 @@ class Account(gui.QMainWindow):
         ui.profession.setText(data['profession'])
         salary = 0
         for i, part in enumerate(data['part']):
+            if part is None:
+                break
             ui.positions.insertRow(i)
             ui.positions.setItem(i, 0, gui.QTableWidgetItem(str(part)))
             ui.positions.setItem(i, 1, gui.QTableWidgetItem(data['position'][i]))
