@@ -44,7 +44,6 @@ def get_full_info(person_id):
     """
     cursor = _db.execute("SELECT * FROM v_fullinfo WHERE id = {}".format(person_id))
     response = cursor.fetchall()
-    print(response)
     info_map = {}
     info_map['part'] = []
     info_map['parts'] = []

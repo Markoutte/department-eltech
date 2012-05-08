@@ -70,8 +70,9 @@ class Form(ui.QMainWindow):
         gui.prof_le.setText(data['profession'])        
         # complete table
         for i, part in enumerate(data['part']):
+            if part == None:
+                break
             gui.position_table.insertRow(i)
-            print(part)
             gui.position_table.setItem(i, 0, ui.QTableWidgetItem(str(part)))
             gui.position_table.setItem(i, 1, ui.QTableWidgetItem(data['position'][i]))
         passport = data['passport'].split(' ', 1) # split to serial (4000) and number (XXXXXX)
@@ -83,6 +84,7 @@ class Form(ui.QMainWindow):
             
         self._ui.ok_btn.setVisible(False)
         self._ui.save_btn.setVisible(True)
+        self.setWindowTitle('Изменить запись')
         
         self.show()
         

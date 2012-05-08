@@ -3,6 +3,7 @@ import PySide.QtCore as core
 import department.database as database
 import department.database.queries as query
 import department.gui.form as _formview
+import department.gui.account as _account
 
 class PersonListView(ui.QListView):
     """
@@ -66,6 +67,7 @@ class PersonListView(ui.QListView):
     def show_full_info(self, index=None):
         if index is None:
             index = self.selectedIndexes()[0]
-        print(query.get_full_info(self.__ids[index.row()]))
+        self.__account = _account.Account(query.get_full_info(self.__ids[index.row()]), self.parent())
+        self.__account.show()
         
         
