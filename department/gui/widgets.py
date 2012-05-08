@@ -19,10 +19,9 @@ class PersonListView(ui.QListView):
         self.setModel(self.__model)
         self.setSelectionMode(self.SingleSelection)
         self.setEditTriggers(self.NoEditTriggers)
-
-        self.connect(self, core.SIGNAL('clicked(const QModelIndex&)'),
-            self, core.SLOT('personClicked(const QModelIndex&)')
-        )
+        
+        core.QObject.connect(self, core.SIGNAL('doubleClicked(const QModelIndex &)'),
+                             self, core.SLOT('show_full_info(const QModelIndex &)'))
 
     @core.Slot('const QString&')
     def update(self, begin):
@@ -42,20 +41,11 @@ class PersonListView(ui.QListView):
             else:
                 self.__model.setStringList([])
 
-    @core.Slot('const QModelIndex&')
-    def personClicked(self, index):
-        """
-        retransmit signal with chosen id from widget with
-        argument of fullname
-        """
-        self.emit(core.SIGNAL('personSelected(int)'),
-            query.get_person_id(self.__ids[index.row()]))
-        
     def contextMenuEvent(self, event):
         menu = ui.QMenu()
-        menu.addAction('Добавить запись', self, core.SLOT('add_record()'))
         if self.selectedIndexes() != []:
-            menu.addAction('Редактировать', self, core.SLOT('edit_record()'))            
+            menu.addAction('Редактировать', self, core.SLOT('edit_record()'))
+            menu.addAction('Подробней', self, core.SLOT('show_full_info()'))      
         menu.exec_(event.globalPos())
         
     @core.Slot()
@@ -66,13 +56,16 @@ class PersonListView(ui.QListView):
     @core.Slot()
     def edit_record(self):
         self._form = _formview.Form(self.parent())
-        response = query.get_full_info(self.__ids[self.selectedIndexes()[0].row()])[0]
-        data = {}
-        data['secondname'] = response[1]
-        data['firstname'] = response[2]
-        data['middlename'] = response[3]
-        self._form.load(data)
+        selected= self.selectedIndexes()[0].row()
+        response = query.get_full_info(self.__ids[selected])
+        self._form.load(response)
         self._form.show()
-    
+        
+    @core.Slot()
+    @core.Slot('const QModelIndex &')
+    def show_full_info(self, index=None):
+        if index is None:
+            index = self.selectedIndexes()[0]
+        print(query.get_full_info(self.__ids[index.row()]))
         
         

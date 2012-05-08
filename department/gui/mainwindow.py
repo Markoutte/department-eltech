@@ -3,7 +3,6 @@
 """
 import PySide.QtGui as ui
 import PySide.QtCore as core
-import department.database.queries as _query
 import department.gui.widgets as _widgets
 import PySide.QtUiTools as ui_loader
 
@@ -11,7 +10,7 @@ class MainWindow(ui.QMainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setMinimumSize(600, 480)
+        self.setMinimumSize(600, 240)
 
         loader = ui_loader.QUiLoader(parent)
         self._ui = loader.load('gui/mainwindow.ui')
@@ -32,8 +31,8 @@ class MainWindow(ui.QMainWindow):
         # set connection
         core.QObject.connect(self._ui.find_btn, core.SIGNAL('clicked()'),
             self, core.SLOT('send_query()'))
-        core.QObject.connect(self.__persons_ls, core.SIGNAL('personSelected(int)'),
-                             self, core.SLOT('fill_info(int)'))
+        core.QObject.connect(self._ui.add_employee_btn, core.SIGNAL('clicked()'),
+            self.__persons_ls, core.SLOT('add_record()'))
         
         self.setWindowTitle("Кадровый учёт")
         
@@ -45,16 +44,9 @@ class MainWindow(ui.QMainWindow):
         self.__persons_ls.update(self._ui.search_bx.text())
         
     def keyPressEvent(self, event):
+        """
+        hang up an event of enter or return key pressed. If that updates list view 
+        """
         if event.key() in (core.Qt.Key_Return, core.Qt.Key_Enter):
             self.send_query()
-            
-    @core.Slot('int')
-    def fill_info(self, person_id):
-        """
-        fill info panel with data
-        """
-        full_info = _query.get_full_info(person_id)
-        if full_info is None:
-            return
-        self._ui.fullname_lbl.setText('<b>{} {} {}</b>'.format(full_info[0][1], full_info[0][2], full_info[0][3]))
             
