@@ -17,7 +17,26 @@ class Test(unittest.TestCase):
 
     def test_add_employee(self):
         with self.db:
-            pass
+            employee = sql.Employee()
+            employee.fullname = 'John Doe'
+            employee.gender = 'm'
+            employee.birth = '2012.05.12'
+            employee.education = 'высшее'
+            employee.degree = 'специалист'
+            employee.programme = 'информационные технологии'
+            employee.family_status = 0
+            employee.address_1 = '199178, СПб, ул. профессора Попова, д. 5'
+            employee.phone = '+7 911 835 2559'
+            employee.experience = '2011.05.11'
+            employee.passport = '4009 214153'
+            employee.issue = '2011.01.01'
+            employee.authority = '30-е отделение милиции'
+            employee.signed = '2012.05.12'
+            employee.type = 'временный'
+            employee_id = self.db.add_employee(employee)
+            self.assertNotEqual(0, employee_id, 'Oh, no!')
+            self.assertIsNotNone(self.db.get_employee_info(employee_id))
+            
 
     def test_set_position(self):
         with self.db:
@@ -32,11 +51,19 @@ class Test(unittest.TestCase):
             self.conn.rollback()
             # All good
             self.assertTrue(self.db.set_position(3, 11, 0.5))
-            print(self.db.get_positions_list(3))
             # Duplicate
             self.assertFalse(self.db.set_position(3, 1, 0.5))
             self.conn.rollback()
-
+            
+    def test_remove_position(self):
+        with self.db:
+            EMPLOYEE = 3
+            POSITION = 2
+            # Fail delete (no such entry)
+            self.assertFalse(self.db.remove_position(EMPLOYEE, POSITION))
+            # Succeed delete
+            self.assertTrue(self.db.remove_position(EMPLOYEE, POSITION - 1))
+            
     def test_set_rate(self):
         with self.db:
             self.assertTrue(self.db.set_rate(3, 1, 1.0), 'Something wrong!')

@@ -1,5 +1,6 @@
 import PySide.QtCore as Core
 import psycopg2
+import logging
 
 ## Модель предметной области
 class Department(Core.QObject):
@@ -16,7 +17,53 @@ class Department(Core.QObject):
     
     ## Добавить сотрудника 
     def add_employee(self, employee):
-        pass
+        take_str = lambda x : "'{}'".format(x) if x is not None else 'NULL'
+        take = lambda x : x if x is not None else 'NULL'
+        query = "INSERT INTO contract(signed, \"type\") "
+        query += ("VALUES ({}, {});"
+                  .format(take_str(employee.signed), 
+                          take_str(employee.type)))
+        if not self.__try_execute(query):
+            return 0
+        query = "SELECT currval('contract_id_seq');"
+        self.cursor.execute(query)
+        contract_id = self.cursor.fetchone()[0]
+        query = "INSERT INTO passport(id, issue, authority, address) "
+        query += ("VALUES ({id}, {issue}, {authority}, {address});"
+                  .format(id = take_str(employee.passport),
+                          issue = take_str(employee.issue),
+                          authority = take_str(employee.authority),
+                          address = take_str(employee.address_1))
+                  )
+        if not self.__try_execute(query):
+            return 0
+        query = ("INSERT INTO employee(contract, fullname, gender, birth, "
+                 "education, degree, programme, family_status, address, "
+                 "phone, experience, passport) ")
+        query += ("VALUES ({contract}, {fullname}, {gender}, {birth}, "
+                 "{education}, {degree}, {programme}, {family_status}, {address}, "
+                 "{phone}, {experience}, {passport});"
+                 .format(contract = take(contract_id),
+                         fullname = take_str(employee.fullname),
+                         gender = take_str(employee.gender),
+                         birth = take_str(employee.birth),
+                         education = take_str(employee.education),
+                         degree = take_str(employee.degree),
+                         programme = take_str(employee.programme),
+                         family_status = take(employee.family_status),
+                         address = take_str(employee.address_2),
+                         phone = take(employee.phone),
+                         experience = take_str(employee.experience),
+                         passport = take_str(employee.passport)
+                         )
+                  )
+        if not self.__try_execute(query):
+            return 0
+        query = "SELECT currval('employee_personnel_number_seq');"
+        self.cursor.execute(query)
+        contract_id = self.cursor.fetchone()[0]
+        return contract_id if contract_id is not None else 0
+            
     
     ## Добавить должность
     def add_position(self, position):
@@ -31,7 +78,10 @@ class Department(Core.QObject):
     
     ## Снять с должности
     def remove_position(self, employee_id, position_id):
-        pass
+        query = "DELETE FROM employee_has_position "
+        query += "WHERE employee = {} ".format(employee_id)
+        query += "AND position = {};".format(position_id)
+        return self.__try_execute(query)
     
     ## Изенить ставку
     #
@@ -133,10 +183,90 @@ class Department(Core.QObject):
             is_succeed = True
             try:
                 self.cursor.execute(query)
-            except psycopg2.IntegrityError:
+            except psycopg2.IntegrityError as integrity_error:
+                log = logging.getLogger()
+                log.error(integrity_error.pgerror)
                 is_succeed = False
         elif query[0:6] == 'UPDATE':
             self.cursor.execute(query)
-            is_succeed = True if self.cursor.statusmessage != 'UPDATE 0'else False
+            is_succeed = True if self.cursor.statusmessage != 'UPDATE 0' else False
+        elif query[0:6] == 'DELETE':
+            self.cursor.execute(query)
+            is_succeed = True if self.cursor.statusmessage != 'DELETE 0' else False
         self.emit(Core.SIGNAL('dataChanged(bool)'), is_succeed)
         return is_succeed
+    
+class Employee(object):
+    ## Полное имя VARCHAR
+    fullname = None
+    ## Пол CHAR ('m'/'f')
+    gender=None
+    ## Дата рождения DATE
+    #
+    # В формате строки ('ГГГГ.ММ.ДД')
+    __birth=None
+    @property
+    def birth(self):
+        return self.__birth.toString('yyyy.M.d')
+    @birth.setter
+    def birth(self, date):
+        self.__birth = Core.QDate.fromString(date, 'yyyy.M.d')
+    ## Образование (напр. высшее) VARCHAR
+    education=None
+    ## Академическая степень (напр. бакалавр) VARCHAR
+    degree=None
+    ## Направление подготовки (напр. КБ) VARCHAR
+    programme=None
+    ## Семейный статус (0, 1, 2, 3) INTEGER
+    family_status=None
+    ## Адрес, указанный в пасроте TEXT
+    address_1=None
+    ## Адрес проживания TEXT
+    address_2=None
+    ## Телефон INTEGER
+    #
+    # Аргменты могут быть int или str
+    __phone=None
+    @property
+    def phone(self):
+        return self.__phone
+    @phone.setter
+    def phone(self, number):
+        if type(number) == type(int()):
+            self.__phone = number
+        elif type(number) == type(str()):
+            self.__phone = int(number.replace(' ', ''))
+        else:
+            self.__phone = None
+    ## Дата начала опыта работы DATE
+    #
+    # В формате строки ('ГГГГ.ММ.ДД')
+    __experience=None
+    @property
+    def experience(self):
+        return self.__experience.toString('yyyy.M.d')
+    @experience.setter
+    def experience(self, date):
+        self.__experience = Core.QDate.fromString(date, 'yyyy.M.d')
+    ## Номер паспрорта VARCHAR
+    passport=None
+    ## Дата выдачи паспорта DATE
+    __issue=None
+    @property
+    def issue(self):
+        return self.__issue.toString('yyyy.M.d')
+    @issue.setter
+    def issue(self, date):
+        self.__issue = Core.QDate.fromString(date, 'yyyy.M.d')
+    ## Кем выдан TEXT
+    authority=None
+    ## Даата подписания контракта DATE
+    __signed=None
+    @property
+    def signed(self):
+        return self.__signed.toString('yyyy.M.d')
+    @signed.setter
+    def signed(self, date):
+        self.__signed = Core.QDate.fromString(date, 'yyyy.M.d')
+    ## Тип контракта (времменый, постоянный) VARCHAR
+    type=None
