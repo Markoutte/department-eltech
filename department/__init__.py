@@ -1,12 +1,9 @@
-import department.sql as sql
-import psycopg2
+import sys
+from department.application import Application
 
 def main():
-    conn = psycopg2.connect(dbname='department', user='postgres', password='postgres')
-    with sql.Department(conn) as m:
-        m.add_employee(None)
-        
-    return True
+    app = Application(sys.argv)
+    app.exec_()
 
 if __name__ == '__main__':
     main()

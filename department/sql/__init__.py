@@ -1,8 +1,7 @@
 import PySide.QtCore as Core
 import psycopg2
 import logging
-from department.sql import structs 
-import struct
+from department.sql import model
 
 ## Модель предметной области
 class Department(Core.QObject):
@@ -261,7 +260,10 @@ class Department(Core.QObject):
         return string
     
 def Employee():
-    return structs.Employee()
+    return model.Employee()
 
 def Position():
-    return structs.Position()
+    return model.Position()
+
+def EmployeeListModel(parent=None):
+    return model.EmployeeListModel(parent)
