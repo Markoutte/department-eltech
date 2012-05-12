@@ -37,6 +37,26 @@ class Test(unittest.TestCase):
             self.assertNotEqual(0, employee_id, 'Oh, no!')
             self.assertIsNotNone(self.db.get_employee_info(employee_id))
             
+    def test_add_position(self):
+        with self.db:
+            position = sql.Position()
+            position.position = 'Test name'
+            position.category = 'Технический персонал'
+            position.rate_amount = 7
+            position.salary = 23456.234
+            position_id = self.db.add_position(position)
+            self.assertNotEqual(0, position_id, "Oh, no!")
+            self.assertIsNotNone(self.db.get_position_info(position_id))
+
+    def test_update(self):
+        with self.db:
+            # No employee
+            self.assertFalse(self.db.update_employee(0))
+            # Ok
+            self.assertTrue(self.db.update_employee(3, fullname='John Doe', phone = 'null'))
+            # Cannot be null exception
+            self.assertFalse(self.db.update_employee(3, fullname='null'))
+            self.conn.rollback()
 
     def test_set_position(self):
         with self.db:
