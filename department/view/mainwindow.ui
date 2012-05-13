@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1030</width>
-    <height>531</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -44,12 +44,11 @@
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="add_employee_btn">
-       <property name="text">
-        <string>Добавить</string>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <property name="selectionRectVisible">
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -59,6 +58,12 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLabel" name="err_output">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="styleSheet">
         <string notr="true">color: red; 
 background: #FFFEDE; 
@@ -72,6 +77,30 @@ padding: 5px;</string>
      </item>
      <item>
       <widget class="QScrollArea" name="form_scroll">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
+       </property>
+       <property name="horizontalScrollBarPolicy">
+        <enum>Qt::ScrollBarAlwaysOff</enum>
+       </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>
@@ -81,81 +110,466 @@ padding: 5px;</string>
           <x>0</x>
           <y>0</y>
           <width>801</width>
-          <height>341</height>
+          <height>464</height>
          </rect>
         </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="rightMargin">
+            <number>10</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="fullname_lbl">
+             <property name="text">
+              <string>Основная иформация (ФИО, брак, пол)</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLineEdit" name="fullname_le"/>
+             </item>
+             <item>
+              <widget class="QComboBox" name="family_status_cmb"/>
+             </item>
+             <item>
+              <widget class="QComboBox" name="gender_cmb">
+               <item>
+                <property name="text">
+                 <string>мужской</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>женский</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="birth_lbl">
+             <property name="text">
+              <string>Дата рождения</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateEdit" name="birth_date">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="date">
+              <date>
+               <year>1970</year>
+               <month>1</month>
+               <day>1</day>
+              </date>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="education_lbl">
+             <property name="text">
+              <string>Образование</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="education_cmb">
+             <item>
+              <property name="text">
+               <string>высшее</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>высшее неоконченное</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>среднее неполное</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>среднее полное</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>среднее специальное</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="degree_cmb">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>бакалавр</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>специалист</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>магистр</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>кандидат наук</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>доктор наук</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="programme_le"/>
+           </item>
+           <item>
+            <widget class="QLabel" name="experience_lbl">
+             <property name="text">
+              <string>Дата начала стажа</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateEdit" name="experience_date">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="address_2_lbl">
+             <property name="text">
+              <string>Адрес проживания</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPlainTextEdit" name="address_2_te">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>60</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="phone_lbl">
+             <property name="text">
+              <string>Телефон</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="phone_le"/>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>10</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="leftMargin">
+            <number>10</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="passport_lbl">
+             <property name="text">
+              <string>Паспорт</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="passport_layout">
+             <item>
+              <widget class="QLineEdit" name="serial_le">
+               <property name="maximumSize">
+                <size>
+                 <width>46</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="number_lbl">
+               <property name="text">
+                <string>№</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="number_le">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="issue_lbl">
+             <property name="text">
+              <string>Дата выдачи</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateEdit" name="issue_date">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="date">
+              <date>
+               <year>2010</year>
+               <month>1</month>
+               <day>1</day>
+              </date>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="authority_lbl">
+             <property name="text">
+              <string>Кем выдан</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPlainTextEdit" name="authority_te">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>60</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="address_layout">
+             <item>
+              <widget class="QLabel" name="address_1_lbl">
+               <property name="text">
+                <string>Адрес регистрации</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="copy_address_btn">
+               <property name="maximumSize">
+                <size>
+                 <width>1000000</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">color: blue</string>
+               </property>
+               <property name="text">
+                <string>Совпадает с адресом проживания</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPlainTextEdit" name="address_1_te">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>60</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line_2">
+             <property name="styleSheet">
+              <string notr="true">color: #AAA;</string>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="contract_lbl">
+             <property name="text">
+              <string>Контракт заключён</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDateEdit" name="signed_date">
+             <property name="maximumSize">
+              <size>
+               <width>100</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="date">
+              <date>
+               <year>2010</year>
+               <month>1</month>
+               <day>1</day>
+              </date>
+             </property>
+             <property name="calendarPopup">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="type_lbl">
+             <property name="text">
+              <string>Тип контракта</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="type_cmb">
+             <property name="editable">
+              <bool>false</bool>
+             </property>
+             <item>
+              <property name="text">
+               <string>временный</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>постоянный</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="positoin_controls">
-       <item>
-        <widget class="QLabel" name="positions_lbl">
-         <property name="text">
-          <string>Должности</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="positions_cmb">
-         <property name="minimumSize">
-          <size>
-           <width>250</width>
-           <height>0</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="rate_cmb">
-         <property name="maximumSize">
-          <size>
-           <width>40</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="set_position_btn">
-         <property name="maximumSize">
-          <size>
-           <width>40</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>+</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="remove_position_btn">
-         <property name="maximumSize">
-          <size>
-           <width>40</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>-</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
      </item>
      <item>
       <widget class="QTableView" name="position_table_view">
@@ -174,11 +588,14 @@ padding: 5px;</string>
        <property name="selectionBehavior">
         <enum>QAbstractItemView::SelectRows</enum>
        </property>
+       <property name="horizontalScrollMode">
+        <enum>QAbstractItemView::ScrollPerPixel</enum>
+       </property>
        <attribute name="horizontalHeaderCascadingSectionResizes">
         <bool>false</bool>
        </attribute>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>80</number>
+        <number>60</number>
        </attribute>
        <attribute name="horizontalHeaderHighlightSections">
         <bool>true</bool>
@@ -196,6 +613,60 @@ padding: 5px;</string>
         <number>20</number>
        </attribute>
       </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="buttons_layout">
+       <item>
+        <widget class="QPushButton" name="clear_btn">
+         <property name="text">
+          <string>Очистить все поля</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="add_employee_btn">
+         <property name="text">
+          <string>Добавить запись</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="update_employee_btn">
+         <property name="text">
+          <string>Обновить данные</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

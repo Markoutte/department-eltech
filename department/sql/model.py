@@ -1,6 +1,8 @@
-from PySide.QtCore import (Qt, QAbstractListModel, QAbstractTableModel, QModelIndex, QDate)
+import PySide.QtCore as core
+import PySide.QtGui as gui
+from PySide.QtCore import Qt
 
-class EmployeeListModel(QAbstractListModel):
+class EmployeeListModel(core.QAbstractListModel):
     
     employees=[]
     
@@ -14,7 +16,7 @@ class EmployeeListModel(QAbstractListModel):
     def employeesList(self):
         return self.employees
         
-    def rowCount(self, index=QModelIndex()):
+    def rowCount(self, index=core.QModelIndex()):
         return len(self.employees)
     
     def data(self, index, role=Qt.DisplayRole):
@@ -31,9 +33,9 @@ class EmployeeListModel(QAbstractListModel):
             return None        
         return self.employees[index.row()][0]
     
-class PositionTableModel(QAbstractTableModel):
+class PositionTableModel(core.QAbstractTableModel):
     positions=[]
-    COLUMNS = 5
+    COLUMNS = 8
     
     def __init__(self, parent=None):
         super(PositionTableModel, self).__init__(parent)
@@ -45,10 +47,10 @@ class PositionTableModel(QAbstractTableModel):
     def positionList(self):
         return self.positions
     
-    def rowCount(self, index=QModelIndex()):
+    def rowCount(self, index=core.QModelIndex()):
         return len(self.positions)
     
-    def columnCount(self, index=QModelIndex()):
+    def columnCount(self, index=core.QModelIndex()):
         return self.COLUMNS
     
     def data(self, index, role=Qt.DisplayRole):
@@ -65,14 +67,57 @@ class PositionTableModel(QAbstractTableModel):
             return None
         if orientation == Qt.Horizontal:
             if section == 0:
-                return "Название"
+                return self.tr("Название")
             elif section == 1:
-                return "Разряд"
+                return self.tr("Разряд")
             elif section == 2:
-                return "Категория"
+                return self.tr("Категория")
             elif section == 3:
-                return "Ставка"
+                return self.tr("Ставка")
+            elif section == 4:
+                return self.tr("Зарплата")
+            elif section == 5:
+                return self.tr("Ставок")
+            elif section == 6:
+                return self.tr("Занято")
         return None
+    
+    def insertRow(self, position, index=core.QModelIndex()):
+        return self.insertRows(position, 1, index)
+    
+    def insertRows(self, position, rows, index=core.QModelIndex()):
+        self.beginInsertRows(index, position, position+rows-1)
+        for row in range(0, rows):
+            record = (None, None, None, None, None, None, None, None)
+            self.positions.insert(position + row, record)
+        self.endInsertRows()
+        return True
+    
+    def removeRow(self, position, index=core.QModelIndex()):
+        self.removeRows(position, 1, index)
+    
+    def removeRows(self, position, rows, index=core.QModelIndex()):
+        self.beginRemoveRows(index, position, position+rows-1)
+        for row in range(0, rows):
+            self.positions.remove(self.positions[position])
+        self.endRemoveRows()
+        
+    def setData(self, index, value, role):
+        if index.isValid() and role == Qt.EditRole:
+            row = index.row()
+        
+        record = list(self.positions[row])
+        record[index.column() + 1] = value
+        self.positions.remove(self.positions[row])
+        self.positions.insert(row, tuple(record))
+        
+        self.emit(core.SIGNAL('dataChanged(const QModelIndex&, const QModelIndex&)'), index, index)
+        return True
+    
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index)) 
     
 class Employee(object):
     ## Полное имя VARCHAR
@@ -88,7 +133,7 @@ class Employee(object):
         return self.__birth.toString('yyyy.M.d')
     @birth.setter
     def birth(self, date):
-        self.__birth = QDate.fromString(date, 'yyyy.M.d')
+        self.__birth = core.QDate.fromString(date, 'yyyy.M.d')
     ## Образование (напр. высшее) VARCHAR
     education=None
     ## Академическая степень (напр. бакалавр) VARCHAR
@@ -125,7 +170,7 @@ class Employee(object):
         return self.__experience.toString('yyyy.M.d')
     @experience.setter
     def experience(self, date):
-        self.__experience = QDate.fromString(date, 'yyyy.M.d')
+        self.__experience =  core.QDate.fromString(date, 'yyyy.M.d')
     ## Номер паспрорта VARCHAR
     passport=None
     ## Дата выдачи паспорта DATE
@@ -135,7 +180,7 @@ class Employee(object):
         return self.__issue.toString('yyyy.M.d')
     @issue.setter
     def issue(self, date):
-        self.__issue = QDate.fromString(date, 'yyyy.M.d')
+        self.__issue =  core.QDate.fromString(date, 'yyyy.M.d')
     ## Кем выдан TEXT
     authority=None
     ## Даата подписания контракта DATE
@@ -145,11 +190,13 @@ class Employee(object):
         return self.__signed.toString('yyyy.M.d')
     @signed.setter
     def signed(self, date):
-        self.__signed = QDate.fromString(date, 'yyyy.M.d')
+        self.__signed =  core.QDate.fromString(date, 'yyyy.M.d')
     ## Тип контракта (времменый, постоянный) VARCHAR
     type=None
 
 class Position():
+    #Ид
+    id=None
     # Название
     position=None
     # Разярд
@@ -160,3 +207,7 @@ class Position():
     salary=None
     # Всего ставок
     rate_amount=None
+    # Занятых ставо
+    rate_booked=None
+    # Число сотрудников
+    employees=None

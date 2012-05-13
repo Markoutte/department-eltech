@@ -157,16 +157,15 @@ class Department(Core.QObject):
         return self.cursor.fetchall()
     
     ## Список должностей
-    #
-    # Возвращает в каждой строке 4 поля: код, название, разряд и категорию,
-    # если указано для кого, то вдобавок показывается поле со ставкой
     def get_positions_list(self, employee_id=None):
         if employee_id is None:
-            query = "SELECT code, position, rank, category, NULL "
+            query = ("SELECT code, position, rank, category, NULL, "
+                     "CAST(salary AS REAL), rate_amount, rate_booked, employees ")
             query += "FROM personnel_schedule "
             query += "ORDER BY position, rank;"
         else:
-            query = "SELECT code, p.position, rank, category, e.rate "
+            query = ("SELECT code, p.position, rank, category, e.rate, "
+                     "e.rate*CAST(salary AS REAL), rate_amount, rate_booked, employees ")
             query += "FROM personnel_schedule p, employee_has_position e "
             query += "WHERE p.code = e.position "
             query += "AND e.employee = {} ".format(employee_id)
@@ -177,24 +176,24 @@ class Department(Core.QObject):
     ## Подбробная информация о сотруднике
     #
     # Порядок полей:
-    #    personnel_number INTEGER, -- табельный номер
-    #    contract_id INTEGER, -- номер контракта
-    #    signed VARCHAR, -- дата заключения
-    #    "type" VARCHAR, -- тип контракта (временный/постоянный) 
-    #    fullname VARCHAR,
-    #    gender CHAR, -- 'f'/'m'
-    #    birth VARCHAR, -- день рождения
-    #    education VARCHAR, -- образование (срденее неполное, среднее полное, среднее специальное, неоконченное высшее, высшее)
-    #    degree VARCHAR , -- академическая степень (бакалавр, специалист, магистр, к.н., д.н.)
-    #    programme VARCHAR, -- профиль подготовки, напр. компьютерная безопасность, информационные системы, пр.
-    #    family_status SMALLINT, -- {0:холост/незамужем, 1:женат/замужем, 2:разведён/разведена, 3:вдовец/вдова}
-    #    current_address TEXT, -- адрес проживания
-    #    phone BIGINT, -- телефон
-    #    experience VARCHAR, -- начало стажа работы
-    #    passport_id VARCHAR, -- номер паспорта
-    #    issue VARCHAR, -- дата выдачи
-    #    authority TEXT, -- кем выдан
-    #    passport_address TEXT -- адрес регистрации
+    #    0. personnel_number INTEGER, -- табельный номер
+    #    1. contract_id INTEGER, -- номер контракта
+    #    2. signed VARCHAR, -- дата заключения
+    #    3. "type" VARCHAR, -- тип контракта (временный/постоянный) 
+    #    4. fullname VARCHAR,
+    #    5. gender CHAR, -- 'f'/'m'
+    #    6. birth VARCHAR, -- день рождения
+    #    7. education VARCHAR, -- образование (срденее неполное, среднее полное, среднее специальное, неоконченное высшее, высшее)
+    #    8. degree VARCHAR , -- академическая степень (бакалавр, специалист, магистр, к.н., д.н.)
+    #    9. programme VARCHAR, -- профиль подготовки, напр. компьютерная безопасность, информационные системы, пр.
+    #    10. family_status SMALLINT, -- {0:холост/незамужем, 1:женат/замужем, 2:разведён/разведена, 3:вдовец/вдова}
+    #    11. current_address TEXT, -- адрес проживания
+    #    12. phone BIGINT, -- телефон
+    #    13. experience VARCHAR, -- начало стажа работы
+    #    14. passport_id VARCHAR, -- номер паспорта
+    #    15. issue VARCHAR, -- дата выдачи
+    #    16. authority TEXT, -- кем выдан
+    #    17. passport_address TEXT -- адрес регистрации
     def get_employee_info(self, employee_id):
         query =  "SELECT * FROM get_employee({});".format(employee_id)
         self.cursor.execute(query)
@@ -228,6 +227,7 @@ class Department(Core.QObject):
                 self.cursor.execute(query)
             except psycopg2.IntegrityError as integrity_error:
                 log.error(integrity_error.pgerror)
+                self.error = integrity_error.pgerror
                 is_succeed = False
         elif query[0:6] == 'UPDATE':
             try: 
@@ -235,7 +235,12 @@ class Department(Core.QObject):
                 is_succeed = True if self.cursor.statusmessage != 'UPDATE 0' else False
             except psycopg2.IntegrityError as integrity_error:
                 log.error(integrity_error.pgerror)
+                self.error = integrity_error.pgerror
                 is_succeed = False
+            except psycopg2.InternalError as internal_error:
+                log.error(internal_error.pgerror)
+                self.error = internal_error.pgerror
+                is_succeed = False 
         elif query[0:6] == 'DELETE':
             self.cursor.execute(query)
             is_succeed = True if self.cursor.statusmessage != 'DELETE 0' else False
@@ -252,12 +257,17 @@ class Department(Core.QObject):
         string = "UPDATE {} SET ".format(table)
         set_params = []
         for key in params:
+            if params[key] is None:
+                params[key] = 'NULL'
             set_params.append(("{k} = '{v}'" if is_str(params[key]) else "{k} = {v}")
                               .format(k = key, v = params[key]))        
         string += ", ".join(set_params)
         string += ((" WHERE {} = '{}';" if is_str(id_value) else " WHERE {} = {};")
                    .format(id_name, id_value))
         return string
+    
+    def get_error(self):
+        return self.error
     
 def Employee():
     return model.Employee()
