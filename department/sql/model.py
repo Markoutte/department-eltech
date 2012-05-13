@@ -1,30 +1,28 @@
-from PySide.QtCore import (Qt, QAbstractListModel, QModelIndex, QDate)
+from PySide.QtCore import (Qt, QAbstractListModel, QAbstractTableModel, QModelIndex, QDate)
 
 class EmployeeListModel(QAbstractListModel):
     
-    employees=None
+    employees=[]
     
     def __init__(self, parent=None):
         super(EmployeeListModel, self).__init__(parent)
                 
-    def setEmployeeList(self, employees=None):
-        if employees is None:
-            self.employees = [()]
-        else:
-            self.employees = employees
+    def setEmployeeList(self, employees):
+        self.employees = employees
+        self.reset()
+        
+    def employeesList(self):
+        return self.employees
         
     def rowCount(self, index=QModelIndex()):
         return len(self.employees)
     
     def data(self, index, role=Qt.DisplayRole):
-        if index is None:
-            return None        
-        if 0 > index.row() >= len(self.employees):
-            return None        
-        if role == Qt.DisplayRole:
-            return self.employees[index.row()][1]
-        else:
+        if index.row() < 0 or index.row() >= len(self.employees):
             return None
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
+            return self.employees[index.row()][1]
+        return None
         
     def personnel_number(self, index):
         if index is None:
@@ -32,6 +30,49 @@ class EmployeeListModel(QAbstractListModel):
         if (0 > index.row() >= len(self.employees)):
             return None        
         return self.employees[index.row()][0]
+    
+class PositionTableModel(QAbstractTableModel):
+    positions=[]
+    COLUMNS = 5
+    
+    def __init__(self, parent=None):
+        super(PositionTableModel, self).__init__(parent)
+        
+    def setPositionList(self, positions):
+        self.positions = positions
+        self.reset()
+        
+    def positionList(self):
+        return self.positions
+    
+    def rowCount(self, index=QModelIndex()):
+        return len(self.positions)
+    
+    def columnCount(self, index=QModelIndex()):
+        return self.COLUMNS
+    
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() < 0 or index.row() >= len(self.positions):
+            return None
+        if index.column() < 0 or index.column() >= self.COLUMNS - 1:
+            return None
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
+            return self.positions[index.row()][index.column() + 1]
+        return None
+    
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role != Qt.DisplayRole:
+            return None
+        if orientation == Qt.Horizontal:
+            if section == 0:
+                return "Название"
+            elif section == 1:
+                return "Разряд"
+            elif section == 2:
+                return "Категория"
+            elif section == 3:
+                return "Ставка"
+        return None
     
 class Employee(object):
     ## Полное имя VARCHAR

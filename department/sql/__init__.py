@@ -151,22 +151,22 @@ class Department(Core.QObject):
         query = "SELECT personnel_number, fullname "
         query += "FROM employee "
         if substring is not None:
-            query += "WHERE fullname LIKE '{}%' ".format(substring)
+            query += "WHERE fullname LIKE INITCAP('{}%') ".format(substring)
         query += "ORDER BY fullname;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
     ## Список должностей
     #
-    # Возвращает в каждой строке 3 поля: код, название и разряд,
+    # Возвращает в каждой строке 4 поля: код, название, разряд и категорию,
     # если указано для кого, то вдобавок показывается поле со ставкой
     def get_positions_list(self, employee_id=None):
         if employee_id is None:
-            query = "SELECT code, position, rank "
+            query = "SELECT code, position, rank, category, NULL "
             query += "FROM personnel_schedule "
             query += "ORDER BY position, rank;"
         else:
-            query = "SELECT code, p.position, rank, e.rate "
+            query = "SELECT code, p.position, rank, category, e.rate "
             query += "FROM personnel_schedule p, employee_has_position e "
             query += "WHERE p.code = e.position "
             query += "AND e.employee = {} ".format(employee_id)
@@ -267,3 +267,6 @@ def Position():
 
 def EmployeeListModel(parent=None):
     return model.EmployeeListModel(parent)
+
+def PositionTableModel(parent=None):
+    return model.PositionTableModel(parent)

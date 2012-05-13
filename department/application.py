@@ -11,8 +11,10 @@ class Application(gui.QApplication):
         self.conn = psycopg2.connect(dbname='department', user='postgres', password='postgres')
         self.department = sql.Department(self.conn)
         
-        self.mw = view.MainWindow(self.department)
-        self.mw.set_employees_list(self.department.get_employees_list())  
+        self.mw = view.MainWindow(self, self.department)
+        self.mw.setWindowTitle('Управление кадрами')
+        self.mw.resize(800, 480)
+        self.mw.setMinimumSize(800, 480)
         self.mw.show()
         
         ## connections

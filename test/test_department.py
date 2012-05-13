@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
             employee.address_1 = '199178, СПб, ул. профессора Попова, д. 5'
             employee.phone = '+7 911 835 2559'
             employee.experience = '2011.05.11'
-            employee.passport = '4009 214153'
+            employee.passport = '4001 123456' #'4009 214153'
             employee.issue = '2011.01.01'
             employee.authority = '30-е отделение милиции'
             employee.signed = '2012.05.12'
