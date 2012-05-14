@@ -45,15 +45,15 @@ class MainWindow(gui.QMainWindow):
         
         self.employees = sql.EmployeeListModel()
         self.ui.employee_list_view.setModel(self.employees)
-        self.update_employees_list()
+        self.updateEmployeesList()
         
         self.positions = sql.PositionTableModel()
         self.ui.position_table_view.setModel(self.positions)
         self.ui.position_table_view.setColumnWidth(1, 120)
         self.ui.position_table_view.setColumnWidth(3, 200)
-        self.update_position_list()
+        self.updatePositionList()
         
-        self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('update_employees_list()'))
+        self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('updateEmployeesList()'))
         self.connect(self.ui.employee_list_view, core.SIGNAL('clicked(const QModelIndex &)'),
                      self, core.SLOT('setEmployeeInfo(const QModelIndex &)'))
         self.connect(self.ui.education_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
@@ -71,6 +71,9 @@ class MainWindow(gui.QMainWindow):
         self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
                      self.application, core.SIGNAL('showPersonnelSchedule()'))
         
+        self.connect(self.department, core.SIGNAL('dataChanged()'), 
+                     self, core.SLOT('updatePositionList()'))
+        
         self.updateFamilyStatusComboBox(self.ui.gender_cmb.currentText())
         self.ui.update_employee_btn.setEnabled(False)
         self.ui.position_table_view.hideColumn(self.positions.names['Код'])
@@ -80,7 +83,7 @@ class MainWindow(gui.QMainWindow):
     
     ## Обновить список сотрудников в левой части окна
     @core.Slot()
-    def update_employees_list(self):
+    def updateEmployeesList(self):
         text = self.ui.search_le.text()
         if text == '' or text == "'":
             employees = self.department.get_employees_list()
@@ -90,7 +93,7 @@ class MainWindow(gui.QMainWindow):
         
     ## Обновить список должностей в нижней части окна
     @core.Slot()
-    def update_position_list(self, employee_id=None):
+    def updatePositionList(self, employee_id=None):
         if employee_id is not None:
             positions = self.department.get_positions_list(employee_id)
             self.positions.setPositionList(positions)
@@ -141,7 +144,7 @@ class MainWindow(gui.QMainWindow):
         self.ui.type_cmb.setCurrentIndex({'временный':0, 'постоянный':1}.get(employee[self.TYPE])
                                          if is_ok else 0)
         
-        self.update_position_list(employee_id) if is_ok else self.update_position_list()
+        self.updatePositionList(employee_id) if is_ok else self.updatePositionList()
         self.ui.update_employee_btn.setEnabled(True)
         self.ui.add_employee_btn.setEnabled(False)
         
@@ -183,6 +186,10 @@ class MainWindow(gui.QMainWindow):
             self.employees.personnel_number(self.ui.employee_list_view.currentIndex())
         )
     
+    @core.Slot('tuple')
+    def addPosition(self, record):
+        self.positions.insertData(record)
+    
     def keyPressEvent(self, event):
         if event.key() in (core.Qt.Key_Return, core.Qt.Key_Enter):
-            self.update_employees_list()
+            self.updateEmployeesList()

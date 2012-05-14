@@ -22,7 +22,7 @@ class Application(gui.QApplication):
         self.mw.show()
         
         ## connections
-        self.connect(self.department, core.SIGNAL('dataChanged(bool)'),
+        self.connect(self.department, core.SIGNAL('updateDatabase(bool)'),
                      self, core.SLOT('rollback(bool)'))
         core.QObject.connect(self, core.SIGNAL('aboutToQuit()'), self.close)
     
@@ -69,15 +69,12 @@ class Application(gui.QApplication):
             authority = empl.authority, 
             address = empl.address_1
         )
-        
         if not is_passport_updated:
             return self.__show_err(self.department.get_error())
-        
         is_contract_updated = self.department.update_contract(employee[1],
             signed = empl.signed,
             type = empl.type
-        )
-        
+        )        
         is_updated = is_employee_updated and is_passport_updated and is_contract_updated
         self.acceptChanges(is_updated)
         if is_updated:
@@ -91,8 +88,8 @@ class Application(gui.QApplication):
         is_added = self.department.add_employee(employee)
         self.acceptChanges(is_added)
         if not is_added:
-            return self.__show_err(self.department.get_error())
-        self.mw.update_employees_list()
+            return self.__show_err(self.mw.ui, is_added == False, self.department.get_error())
+        self.mw.updateEmployeesList()
         
     @core.Slot()
     def showPersonnelSchedule(self):
@@ -100,11 +97,45 @@ class Application(gui.QApplication):
         self.ps = self.__show_personnal_schedule_window()
         self.connect(self.ps, core.SIGNAL('positionChose(int)'),
                      self, core.SLOT('addPositionToList(int)'))
+        self.connect(self.ps, core.SIGNAL('addPosition()'), self, core.SLOT('addPosition()'))
+        self.connect(self.ps, core.SIGNAL('deletePosition(int)'), self, core.SLOT('deletePosition(int)'))
+        self.connect(self.ps, core.SIGNAL('updatePosition(int, QString, int)'), self, core.SLOT('updatePosition(int, QString, int)'))
         self.ps.show()
         
     @core.Slot('int')
     def addPositionToList(self, position_id):
-        print(position_id, self.department.get_position_info(position_id))
+        self.mw.addPosition(self.department.get_position_info(position_id))
+        
+    @core.Slot()
+    def addPosition(self):
+        ui = self.ps.ui
+        position = sql.Position()
+        position.position = ui.position_le.text() if ui.position_le.text() not in ("", "'") else None
+        position.rank = ui.rank_le.text() if ui.rank_le.text() not in ("", "'") else None
+        position.category = ui.category_cmb.currentText() if ui.category_cmb.currentText() not in ("", "'") else None
+        position.rate_amount = ui.rate_amount_le.text() if ui.rate_amount_le.text() not in ("", "'") else None
+        position.salary =  ui.salary_le.text() if ui.salary_le.text() not in ("", "'") else None
+        is_added = self.department.add_position(position)
+        self.acceptChanges(is_added)
+        if not is_added:
+            return self.__show_err(self.ps.ui, is_added == False, self.department.get_error())
+        
+    @core.Slot('int')
+    def deletePosition(self, position_id):
+        is_ok = self.department.delete_position(position_id)
+        self.acceptChanges(is_ok)
+        
+    @core.Slot('int', 'QString', 'int')
+    def updatePosition(self, position_id, field, value):
+        if field == 'Зарплата':
+            arg = {'salary':value}
+        elif field == 'Ставок':
+            arg = {'rate_amount':value}
+        else:
+            return
+        is_ok = self.department.update_position(position_id, **arg)
+        self.acceptChanges(is_ok)
+        
     
     def __get_employee(self):
         ui = self.mw.ui
@@ -127,9 +158,9 @@ class Application(gui.QApplication):
         employee.type = ui.type_cmb.currentText()
         return employee
     
-    def __show_err(self, error):
-        self.mw.ui.err_output.setText(error)
-        self.mw.ui.err_output.setVisible(True)
+    def __show_err(self, window, status, error):
+        window.err_output.setText(error)
+        window.err_output.setVisible(status)
         
     def __show_personnal_schedule_window(self):
         ps = view.PersonnelSchedule(self, self.department, self.mw)

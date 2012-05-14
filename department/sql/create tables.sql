@@ -36,7 +36,8 @@ CREATE TABLE personnel_schedule (
 	salary NUMERIC(13, 4) NOT NULL DEFAULT 0.0000, -- ну кто может получить запрлату больше 9 миллионов?
 	rate_amount REAL NOT NULL, -- число доступных ставок
 	rate_booked REAL NOT NULL DEFAULT 0.00 CHECK (rate_booked <= rate_amount), -- число занятынх ставок
-	employees SMALLINT NOT NULL DEFAULT 0 -- число занятых сотрудников
+	employees SMALLINT NOT NULL DEFAULT 0, -- число занятых сотрудников
+	UNIQUE (position, rank, category)
 );
 
 CREATE TABLE employee_has_position (

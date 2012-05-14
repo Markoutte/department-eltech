@@ -20,18 +20,18 @@ class Test(unittest.TestCase):
             employee = sql.Employee()
             employee.fullname = 'John Doe'
             employee.gender = 'm'
-            employee.birth = '2012.05.12'
+            employee.birth = '05.12.2012'
             employee.education = 'высшее'
             employee.degree = 'специалист'
             employee.programme = 'информационные технологии'
             employee.family_status = 0
             employee.address_1 = '199178, СПб, ул. профессора Попова, д. 5'
             employee.phone = '+7 911 835 2559'
-            employee.experience = '2011.05.11'
-            employee.passport = '4001 123456' #'4009 214153'
-            employee.issue = '2011.01.01'
+            employee.experience = '11.05.2011'
+            employee.passport = '4001 163656' #'4009 214153'
+            employee.issue = '01.01.2011'
             employee.authority = '30-е отделение милиции'
-            employee.signed = '2012.05.12'
+            employee.signed = '12.05.2012'
             employee.type = 'временный'
             employee_id = self.db.add_employee(employee)
             self.assertNotEqual(0, employee_id, 'Oh, no!')
@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
             # No employee
             self.assertFalse(self.db.update_employee(0))
             # Ok
-            self.assertTrue(self.db.update_employee(3, fullname='John Doe', phone = 'null'))
+            self.assertTrue(self.db.update_employee(5, fullname='John Doe', phone = 'null'))
             # Cannot be null exception
             self.assertFalse(self.db.update_employee(3, fullname='null'))
             self.conn.rollback()
@@ -70,15 +70,15 @@ class Test(unittest.TestCase):
             self.assertFalse(self.db.set_position(1, 0, 0.5))
             self.conn.rollback()
             # All good
-            self.assertTrue(self.db.set_position(3, 11, 0.5))
+            self.assertTrue(self.db.set_position(5, 11, 0.5))
             # Duplicate
             self.assertFalse(self.db.set_position(3, 1, 0.5))
             self.conn.rollback()
             
     def test_remove_position(self):
         with self.db:
-            EMPLOYEE = 3
-            POSITION = 2
+            EMPLOYEE = 5
+            POSITION = 3
             # Fail delete (no such entry)
             self.assertFalse(self.db.remove_position(EMPLOYEE, POSITION))
             # Succeed delete
@@ -86,8 +86,8 @@ class Test(unittest.TestCase):
             
     def test_set_rate(self):
         with self.db:
-            self.assertTrue(self.db.set_rate(3, 1, 1.0), 'Something wrong!')
-            self.assertFalse(self.db.set_rate(1, 1, 1.0), 'Something wrong!')
+            self.assertTrue(self.db.set_rate(5, 2, 1.0), 'Something wrong!')
+            self.assertFalse(self.db.set_rate(5, 1, 1.0), 'Something wrong!')
 
     def test_get_employees_list(self):
         with self.db:
@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
     
     def test_get_employee_info(self):
         with self.db:
-            self.assertIsNotNone(self.db.get_employee_info(3), 'No employee with this id')
+            self.assertIsNotNone(self.db.get_employee_info(5), 'No employee with this id')
             
     def test_get_position_info(self):
         with self.db:

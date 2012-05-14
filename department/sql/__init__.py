@@ -214,12 +214,13 @@ class Department(Core.QObject):
     #    position VARCHAR, -- должность (инженер, доцент, зав. кафедрой и пр.)
     #    rank VARCHAR, -- разярд, напр.: 1-й, 2-й, 3-й или младший, старший
     #    category VARCHAR, -- категория, напр. (профессорско-преподавательский состав, технический персонал, административный состав, хозяйственный состав и т.д.
+    #    NULL — это место зарезервировано для учёта ставки
     #    salary NUMERIC(13, 4), -- ну кто может получить запрлату больше 9 миллионов?
     #    rate_amount REAL, -- число доступных ставок
     #    rate_booked REAL, -- число занятынх ставок
     #    employees SMALLINT -- число занятых сотрудников
     def get_position_info(self, position_id):
-        query = "SELECT code, position, rank, category, CAST(salary AS REAL), rate_amount, rate_booked, employees " 
+        query = "SELECT code, position, rank, category, NULL, CAST(salary AS REAL), rate_amount, rate_booked, employees " 
         query += "FROM personnel_schedule "
         query += "WHERE code = {};".format(position_id)
         self.cursor.execute(query)
@@ -251,7 +252,10 @@ class Department(Core.QObject):
         elif query[0:6] == 'DELETE':
             self.cursor.execute(query)
             is_succeed = True if self.cursor.statusmessage != 'DELETE 0' else False
-        self.emit(Core.SIGNAL('dataChanged(bool)'), is_succeed)
+        self.emit(Core.SIGNAL('updateDatabase(bool)'), is_succeed)
+        if is_succeed:
+            self.emit(Core.SIGNAL('dataChanged()'))
+        log.warn(query)
         return is_succeed
     
     ## Сконструировать строку обновления данных

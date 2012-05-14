@@ -87,6 +87,17 @@ class PositionTableModel(core.QAbstractTableModel):
     def insertRow(self, position, index=core.QModelIndex()):
         return self.insertRows(position, 1, index)
     
+    def insertData(self, record, index=core.QModelIndex()):
+        if record is None or type(record) != type(tuple()):
+            return False
+        position = len(self.positions)
+        # Добавляем ставку
+        self.beginInsertRows(index, position, position-1)
+        self.positions.insert(position, record)
+        self.endInsertRows()
+        self.reset()
+        return True
+    
     def insertRows(self, position, rows, index=core.QModelIndex()):
         self.beginInsertRows(index, position, position+rows-1)
         for row in range(0, rows):
@@ -111,16 +122,30 @@ class PositionTableModel(core.QAbstractTableModel):
             row = index.row()
         
         record = list(self.positions[row])
+        if value == record[index.column()]:
+            return False
         # Если меняем ставку, то пересчитвааем зарплату
         if index.column() == self.names['Ставка']: 
             # Выставляем значение, близкое к тем, что есть в перечне
             values = (0.25, 0.5, 1.0)
+            # Когда пользователь впервые редактирует
+            # данные и она возвращается в качестве str()
+            # все введёныые буквы меяем на 0
+            # ^((\d+(\.|,\d*)?)|((\d*\.|,)?\d+))$ — число с ПТ с точкой или запятой в разделите
+            if type(value) == type(str()):
+                if not re.match(r'^((\d+(\.|,\d*)?)|((\d*\.|,)?\d+))$', value):
+                    return False
+                else: 
+                    value = float(re.sub(',', '.', value))
             get_abs = lambda x : lambda y : abs(x - y)
             differ = list(map(get_abs(value), values))
             value = values[differ.index(min(differ))]
             # Пересчитываем зарплату
             salary = record[self.names['Зарплата']]
-            record[self.names['Зарплата']] = (value * salary) / float(record[index.column()])
+            # Когда значение ставки не указано — ставим по умолчанию 1
+            # для корректного пересчёта
+            currval = record[index.column()] if record[index.column()] is not None else 1
+            record[self.names['Зарплата']] = (value * salary) / float(currval)
         # если меняем зарпату и меняем это в общем окне
         # отсеиваем такие действия, т.к. если модель меняется
         # у сотрудника, то у него есть сведенья о ставке
@@ -128,6 +153,8 @@ class PositionTableModel(core.QAbstractTableModel):
         elif (index.column() == self.names['Зарплата'] and
               record[self.names['Ставка']] is None):
             record[self.names['Зарплата']] = value
+        elif index.column() == self.names['Ставок']:
+            pass
         else:
             return False
         
