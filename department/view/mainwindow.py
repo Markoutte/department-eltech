@@ -55,21 +55,8 @@ class MainWindow(gui.QMainWindow):
         self.ui.position_table_view.setColumnWidth(3, 80)
         self.update_position_list()
         
-#        position = sql.Position()
-#        pos_list = self.department.get_position_info(1)
-#        position.id = pos_list[0]
-#        position.position = pos_list[1]
-#        position.rank = pos_list[2]
-#        position.category = pos_list[3]
-#        position.salary = pos_list[4]
-#        position.rate_amount = pos_list[5]
-#        position.rate_booked = pos_list[6]
-#        position.employees = pos_list[7]
-#        
-#        self.positions.insertRow(position, 0.25)
-        
         self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('update_employees_list()'))
-        self.connect(self.ui.employee_list_view, core.SIGNAL('doubleClicked(const QModelIndex &)'),
+        self.connect(self.ui.employee_list_view, core.SIGNAL('clicked(const QModelIndex &)'),
                      self, core.SLOT('setEmployeeInfo(const QModelIndex &)'))
         self.connect(self.ui.education_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
                      self, core.SLOT('enableSomeComboBox()'))
@@ -81,6 +68,8 @@ class MainWindow(gui.QMainWindow):
                      self, core.SLOT('clear()'))
         self.connect(self.ui.update_employee_btn, core.SIGNAL('clicked()'),
                      self, core.SLOT('updateEmployee()'))
+        self.connect(self.ui.add_employee_btn, core.SIGNAL('clicked()'),
+                     self, core.SIGNAL('addEmployee()'))
         
         self.updateFamilyStatusComboBox(self.ui.gender_cmb.currentText())
         self.ui.update_employee_btn.setEnabled(False)
@@ -185,6 +174,8 @@ class MainWindow(gui.QMainWindow):
         self.setEmployeeInfo(None)
         self.ui.update_employee_btn.setEnabled(False)
         self.ui.add_employee_btn.setEnabled(True)
+        # Снять выделение
+        self.ui.employee_list_view.setCurrentIndex(self.ui.employee_list_view.rootIndex())
         
     @core.Slot()
     def updateEmployee(self):

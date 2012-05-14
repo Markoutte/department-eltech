@@ -1,5 +1,5 @@
+import re
 import PySide.QtCore as core
-import PySide.QtGui as gui
 from PySide.QtCore import Qt
 
 class EmployeeListModel(core.QAbstractListModel):
@@ -130,10 +130,10 @@ class Employee(object):
     __birth=None
     @property
     def birth(self):
-        return self.__birth.toString('yyyy.M.d')
+        return self.__birth.toString('d.M.yyyy')
     @birth.setter
     def birth(self, date):
-        self.__birth = core.QDate.fromString(date, 'yyyy.M.d')
+        self.__birth = core.QDate.fromString(date, 'd.M.yyyy')
     ## Образование (напр. высшее) VARCHAR
     education=None
     ## Академическая степень (напр. бакалавр) VARCHAR
@@ -158,7 +158,11 @@ class Employee(object):
         if type(number) == type(int()):
             self.__phone = number
         elif type(number) == type(str()):
-            self.__phone = int(number.replace(' ', ''))
+            numbers = re.sub('\D', '', number)
+            if numbers != '':
+                self.__phone = int(numbers) 
+            else:
+                self.__phone = None
         else:
             self.__phone = None
     ## Дата начала опыта работы DATE
@@ -167,30 +171,30 @@ class Employee(object):
     __experience=None
     @property
     def experience(self):
-        return self.__experience.toString('yyyy.M.d')
+        return self.__experience.toString('d.M.yyyy')
     @experience.setter
     def experience(self, date):
-        self.__experience =  core.QDate.fromString(date, 'yyyy.M.d')
+        self.__experience =  core.QDate.fromString(date, 'd.M.yyyy')
     ## Номер паспрорта VARCHAR
     passport=None
     ## Дата выдачи паспорта DATE
     __issue=None
     @property
     def issue(self):
-        return self.__issue.toString('yyyy.M.d')
+        return self.__issue.toString('d.M.yyyy')
     @issue.setter
     def issue(self, date):
-        self.__issue =  core.QDate.fromString(date, 'yyyy.M.d')
+        self.__issue =  core.QDate.fromString(date, 'd.M.yyyy')
     ## Кем выдан TEXT
     authority=None
     ## Даата подписания контракта DATE
     __signed=None
     @property
     def signed(self):
-        return self.__signed.toString('yyyy.M.d')
+        return self.__signed.toString('d.M.yyyy')
     @signed.setter
     def signed(self, date):
-        self.__signed =  core.QDate.fromString(date, 'yyyy.M.d')
+        self.__signed =  core.QDate.fromString(date, 'd.M.yyyy')
     ## Тип контракта (времменый, постоянный) VARCHAR
     type=None
 

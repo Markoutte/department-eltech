@@ -15,13 +15,16 @@ class Application(gui.QApplication):
         
         self.mw = view.MainWindow(self, self.department)
         self.mw.setWindowTitle('Управление кадрами')
-        self.mw.resize(800, 600)
+        self.mw.resize(1024, 720)
         self.mw.setMinimumSize(800, 480)
+        self.mw.setMaximumSize(1280, 800)
         self.mw.show()
         
         ## connections
         self.connect(self.mw, core.SIGNAL('updateEmployee(int)'), 
                      self, core.SLOT('updateEmployee(int)'))
+        self.connect(self.mw, core.SIGNAL('addEmployee()'),
+                     self, core.SLOT('addEmployee()'))
         self.connect(self.department, core.SIGNAL('dataChanged(bool)'),
                      self, core.SLOT('rollback(bool)'))
     
@@ -40,30 +43,37 @@ class Application(gui.QApplication):
     def updateEmployee(self, employee_id):
         ui = self.mw.ui
         employee = self.department.get_employee_info(employee_id)
+        empl = self.__get_employee()
         
         is_employee_updated = self.department.update_employee(employee_id,
-            fullname = ui.fullname_le.text() if ui.fullname_le.text() not in ("", "'") else None, 
-            family_status = ui.family_status_cmb.currentIndex(), 
-            gender = {0:'m', 1:'f'}.get(ui.gender_cmb.currentIndex()), 
-            birth = ui.birth_date.date().toString('d.M.yyyy'), 
-            education = ui.education_cmb.currentText(), 
-            degree = ui.degree_cmb.currentText() if ui.degree_cmb.isEnabled() else None, 
-            programme = ui.programme_le.text() if ui.programme_le.isEnabled() and ui.programme_le.text() not in ("", "'") else None, 
-            experience = ui.experience_date.date().toString('d.M.yyyy'), 
-            address = ui.address_2_te.toPlainText() if ui.address_2_te.toPlainText() not in ("", "'") else None, 
-            phone = int(ui.phone_le.text()) if ui.phone_le.text() not in ("", "'") else None,         
+            fullname = empl.fullname, 
+            family_status = empl.family_status, 
+            gender = empl.gender, 
+            birth = empl.birth, 
+            education = empl.education, 
+            degree = empl.degree, 
+            programme = empl.programme, 
+            experience = empl.experience, 
+            address = empl.address_2, 
+            phone = empl.phone,         
         )
+        
+        if not is_employee_updated:            
+            return self.__show_err(self.department.get_error())
         
         is_passport_updated = self.department.update_passport(employee[14],
-            id = ("{} {}".format(ui.serial_le.text(), ui.number_le.text())), 
-            issue = ui.issue_date.date().toString('d.M.yyyy'), 
-            authority = ui.authority_te.toPlainText() if ui.authority_te.toPlainText() not in ("", "'") else None, 
-            address = ui.address_1_te.toPlainText() if ui.address_1_te.toPlainText() not in ("", "'") else None
+            id = empl.passport, 
+            issue = empl.issue, 
+            authority = empl.authority, 
+            address = empl.address_1
         )
         
+        if not is_passport_updated:
+            return self.__show_err(self.department.get_error())
+        
         is_contract_updated = self.department.update_contract(employee[1],
-            signed = ui.signed_date.date().toString('d.M.yyyy'),
-            type = ui.type_cmb.currentText()
+            signed = empl.signed,
+            type = empl.type
         )
         
         is_updated = is_employee_updated and is_passport_updated and is_contract_updated
@@ -71,6 +81,40 @@ class Application(gui.QApplication):
         if is_updated:
             ui.err_output.setVisible(False)
         else:
-            ui.err_output.setText(self.department.get_error())
-            ui.err_output.setVisible(True)
+            self.__show_err(self.department.get_error())
             
+    @core.Slot()
+    def addEmployee(self):
+        employee = self.__get_employee()
+        is_added = self.department.add_employee(employee)
+        self.acceptChanges(is_added)
+        if not is_added:
+            return self.__show_err(self.department.get_error())
+        self.mw.update_employees_list()
+    
+    def __get_employee(self):
+        ui = self.mw.ui
+        employee = sql.Employee()
+        employee.fullname = ui.fullname_le.text() if ui.fullname_le.text() not in ("", "'") else None
+        employee.family_status = ui.family_status_cmb.currentIndex() 
+        employee.gender = {0:'m', 1:'f'}.get(ui.gender_cmb.currentIndex()) 
+        employee.birth = ui.birth_date.date().toString('d.M.yyyy') 
+        employee.education = ui.education_cmb.currentText()
+        employee.degree = ui.degree_cmb.currentText() if ui.degree_cmb.isEnabled() else None 
+        employee.programme = ui.programme_le.text() if ui.programme_le.isEnabled() and ui.programme_le.text() not in ("", "'") else None
+        employee.experience = ui.experience_date.date().toString('d.M.yyyy') 
+        employee.address_2 = ui.address_2_te.toPlainText() if ui.address_2_te.toPlainText() not in ("", "'") else None 
+        employee.phone = ui.phone_le.text() if ui.phone_le.text() not in ("", "'") else None
+        employee.passport = ("{} {}".format(ui.serial_le.text(), ui.number_le.text()))
+        employee.issue = ui.issue_date.date().toString('d.M.yyyy')
+        employee.authority = ui.authority_te.toPlainText() if ui.authority_te.toPlainText() not in ("", "'") else None 
+        employee.address_1 = ui.address_1_te.toPlainText() if ui.address_1_te.toPlainText() not in ("", "'") else None
+        employee.signed = ui.signed_date.date().toString('d.M.yyyy')
+        employee.type = ui.type_cmb.currentText()
+        return employee
+    
+    def __show_err(self, error):
+        self.mw.ui.err_output.setText(error)
+        self.mw.ui.err_output.setVisible(True)
+        
+        

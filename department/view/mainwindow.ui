@@ -48,7 +48,7 @@
         <enum>QAbstractItemView::SelectRows</enum>
        </property>
        <property name="selectionRectVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -299,7 +299,11 @@ padding: 5px;</string>
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="phone_le"/>
+            <widget class="QLineEdit" name="phone_le">
+             <property name="inputMask">
+              <string>+D (DDD) DDD-DD-DD; </string>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="verticalSpacer">
@@ -357,6 +361,9 @@ padding: 5px;</string>
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="inputMask">
+                <string>9999; </string>
+               </property>
               </widget>
              </item>
              <item>
@@ -373,6 +380,9 @@ padding: 5px;</string>
                  <width>100</width>
                  <height>16777215</height>
                 </size>
+               </property>
+               <property name="inputMask">
+                <string>999999; </string>
                </property>
               </widget>
              </item>
