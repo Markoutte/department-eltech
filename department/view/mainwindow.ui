@@ -52,6 +52,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="show_personnel_schedule_btn">
+       <property name="text">
+        <string>Показать штатное расписание</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

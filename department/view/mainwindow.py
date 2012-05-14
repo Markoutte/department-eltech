@@ -49,10 +49,8 @@ class MainWindow(gui.QMainWindow):
         
         self.positions = sql.PositionTableModel()
         self.ui.position_table_view.setModel(self.positions)
-        self.ui.position_table_view.setColumnWidth(0, 160)
-        self.ui.position_table_view.setColumnWidth(1, 80)
-        self.ui.position_table_view.setColumnWidth(2, 200)
-        self.ui.position_table_view.setColumnWidth(3, 80)
+        self.ui.position_table_view.setColumnWidth(1, 120)
+        self.ui.position_table_view.setColumnWidth(3, 200)
         self.update_position_list()
         
         self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('update_employees_list()'))
@@ -69,14 +67,16 @@ class MainWindow(gui.QMainWindow):
         self.connect(self.ui.update_employee_btn, core.SIGNAL('clicked()'),
                      self, core.SLOT('updateEmployee()'))
         self.connect(self.ui.add_employee_btn, core.SIGNAL('clicked()'),
-                     self, core.SIGNAL('addEmployee()'))
+                     self.application, core.SLOT('addEmployee()'))
+        self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
+                     self.application, core.SIGNAL('showPersonnelSchedule()'))
         
         self.updateFamilyStatusComboBox(self.ui.gender_cmb.currentText())
         self.ui.update_employee_btn.setEnabled(False)
-        
-        self.positions.insertRow(0)
-        
-        
+        self.ui.position_table_view.hideColumn(self.positions.names['Код'])
+        self.ui.position_table_view.hideColumn(self.positions.names['Ставок'])
+        self.ui.position_table_view.hideColumn(self.positions.names['Занято'])
+        self.ui.position_table_view.hideColumn(self.positions.names['Сотрудников'])
     
     ## Обновить список сотрудников в левой части окна
     @core.Slot()
@@ -179,8 +179,9 @@ class MainWindow(gui.QMainWindow):
         
     @core.Slot()
     def updateEmployee(self):
-        self.emit(core.SIGNAL('updateEmployee(int)'), 
-                  self.employees.personnel_number(self.ui.employee_list_view.currentIndex()))
+        self.application.updateEmployee(
+            self.employees.personnel_number(self.ui.employee_list_view.currentIndex())
+        )
     
     def keyPressEvent(self, event):
         if event.key() in (core.Qt.Key_Return, core.Qt.Key_Enter):

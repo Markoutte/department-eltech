@@ -35,7 +35,16 @@ class EmployeeListModel(core.QAbstractListModel):
     
 class PositionTableModel(core.QAbstractTableModel):
     positions=[]
-    COLUMNS = 8
+    COLUMNS = 9
+    names = {'Код':0,
+           'Должность':1,
+           'Разряд':2,
+           'Категория':3,
+           'Ставка':4,
+           'Зарплата':5,
+           'Ставок':6,
+           'Занято':7,
+           'Сотрудников':8}
     
     def __init__(self, parent=None):
         super(PositionTableModel, self).__init__(parent)
@@ -43,6 +52,9 @@ class PositionTableModel(core.QAbstractTableModel):
     def setPositionList(self, positions):
         self.positions = positions
         self.reset()
+        
+    def getPositionList(self):
+        return self.positions
         
     def positionList(self):
         return self.positions
@@ -56,30 +68,20 @@ class PositionTableModel(core.QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if index.row() < 0 or index.row() >= len(self.positions):
             return None
-        if index.column() < 0 or index.column() >= self.COLUMNS - 1:
+        if index.column() < 0 or index.column() >= self.COLUMNS:
             return None
-        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
-            return self.positions[index.row()][index.column() + 1]
+        if role in (Qt.DisplayRole, Qt.ToolTipRole, Qt.EditRole):
+            return self.positions[index.row()][index.column()]
         return None
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role != Qt.DisplayRole:
             return None
         if orientation == Qt.Horizontal:
-            if section == 0:
-                return self.tr("Название")
-            elif section == 1:
-                return self.tr("Разряд")
-            elif section == 2:
-                return self.tr("Категория")
-            elif section == 3:
-                return self.tr("Ставка")
-            elif section == 4:
-                return self.tr("Зарплата")
-            elif section == 5:
-                return self.tr("Ставок")
-            elif section == 6:
-                return self.tr("Занято")
+            # Меняем местами ключ со значенями в словаре names
+            columns = dict([(v,k) for (k,v) in self.names.items()])
+            # Возвращаем название по номеру столбца
+            return self.tr(columns[section])
         return None
     
     def insertRow(self, position, index=core.QModelIndex()):
@@ -88,8 +90,10 @@ class PositionTableModel(core.QAbstractTableModel):
     def insertRows(self, position, rows, index=core.QModelIndex()):
         self.beginInsertRows(index, position, position+rows-1)
         for row in range(0, rows):
-            record = (None, None, None, None, None, None, None, None)
-            self.positions.insert(position + row, record)
+            record = []
+            for i in range(0, 9):
+                record.append(None)
+            self.positions.insert(position + row, tuple(record))
         self.endInsertRows()
         return True
     
@@ -107,7 +111,28 @@ class PositionTableModel(core.QAbstractTableModel):
             row = index.row()
         
         record = list(self.positions[row])
-        record[index.column() + 1] = value
+        # Если меняем ставку, то пересчитвааем зарплату
+        if index.column() == self.names['Ставка']: 
+            # Выставляем значение, близкое к тем, что есть в перечне
+            values = (0.25, 0.5, 1.0)
+            get_abs = lambda x : lambda y : abs(x - y)
+            differ = list(map(get_abs(value), values))
+            value = values[differ.index(min(differ))]
+            # Пересчитываем зарплату
+            salary = record[self.names['Зарплата']]
+            record[self.names['Зарплата']] = (value * salary) / float(record[index.column()])
+        # если меняем зарпату и меняем это в общем окне
+        # отсеиваем такие действия, т.к. если модель меняется
+        # у сотрудника, то у него есть сведенья о ставке
+        # в списке должностей такой информации нет
+        elif (index.column() == self.names['Зарплата'] and
+              record[self.names['Ставка']] is None):
+            record[self.names['Зарплата']] = value
+        else:
+            return False
+        
+        # Выставляем новое значение и меняем кортеж с данными    
+        record[index.column()] = value
         self.positions.remove(self.positions[row])
         self.positions.insert(row, tuple(record))
         
@@ -117,7 +142,11 @@ class PositionTableModel(core.QAbstractTableModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index)) 
+        if index.column() not in (self.names['Ставка'], 
+                                  self.names['Зарплата'],
+                                  self.names['Ставок']):
+            return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index))
+        return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index) | Qt.ItemIsEditable) 
     
 class Employee(object):
     ## Полное имя VARCHAR

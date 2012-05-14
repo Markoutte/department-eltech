@@ -13,20 +13,22 @@ class Application(gui.QApplication):
         self.conn = psycopg2.connect(dbname='department', user='postgres', password='postgres')
         self.department = sql.Department(self.conn)
         
+        # Главное окно программы
         self.mw = view.MainWindow(self, self.department)
-        self.mw.setWindowTitle('Управление кадрами')
+        self.mw.setWindowTitle(self.tr('Управление кадрами'))
         self.mw.resize(1024, 720)
         self.mw.setMinimumSize(800, 480)
         self.mw.setMaximumSize(1280, 800)
         self.mw.show()
         
         ## connections
-        self.connect(self.mw, core.SIGNAL('updateEmployee(int)'), 
-                     self, core.SLOT('updateEmployee(int)'))
-        self.connect(self.mw, core.SIGNAL('addEmployee()'),
-                     self, core.SLOT('addEmployee()'))
         self.connect(self.department, core.SIGNAL('dataChanged(bool)'),
                      self, core.SLOT('rollback(bool)'))
+        core.QObject.connect(self, core.SIGNAL('aboutToQuit()'), self.close)
+    
+    def close(self):
+        self.department.close()
+        self.conn.close()
     
     @core.Slot('bool')
     def rollback(self, ok):
@@ -91,6 +93,18 @@ class Application(gui.QApplication):
         if not is_added:
             return self.__show_err(self.department.get_error())
         self.mw.update_employees_list()
+        
+    @core.Slot()
+    def showPersonnelSchedule(self):
+        # Штатное расписание
+        self.ps = self.__show_personnal_schedule_window()
+        self.connect(self.ps, core.SIGNAL('positionChose(int)'),
+                     self, core.SLOT('addPositionToList(int)'))
+        self.ps.show()
+        
+    @core.Slot('int')
+    def addPositionToList(self, position_id):
+        print(position_id, self.department.get_position_info(position_id))
     
     def __get_employee(self):
         ui = self.mw.ui
@@ -116,5 +130,13 @@ class Application(gui.QApplication):
     def __show_err(self, error):
         self.mw.ui.err_output.setText(error)
         self.mw.ui.err_output.setVisible(True)
+        
+    def __show_personnal_schedule_window(self):
+        ps = view.PersonnelSchedule(self, self.department, self.mw)
+        ps.setWindowTitle(self.tr('Штатное расписание'))
+        ps.resize(680, 480)
+        ps.setMinimumSize(640, 480)
+        ps.setMaximumSize(800, 800)        
+        return ps
         
         

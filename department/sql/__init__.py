@@ -14,7 +14,14 @@ class Department(Core.QObject):
         return self
         
     def __exit__(self, type, value, traceback):
-        self.cursor.close()
+        if self.cursor is not None:
+            self.cursor.close()
+            del self.cursor
+            
+    def close(self):
+        if self.cursor is not None:
+            self.cursor.close()
+            del self.cursor
     
     ## Добавить сотрудника 
     def add_employee(self, employee):
