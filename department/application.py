@@ -6,6 +6,8 @@ import PySide.QtGui as gui
 
 class Application(gui.QApplication):
     
+    dataChanged = core.Signal()
+    
     def __init__(self, argv):
         super(Application, self).__init__(argv)
         codec = core.QTextCodec.codecForName('UTF8')
@@ -22,9 +24,11 @@ class Application(gui.QApplication):
         self.mw.show()
         
         ## connections
-        self.connect(self.department, core.SIGNAL('updateDatabase(bool)'),
-                     self, core.SLOT('rollback(bool)'))
-        core.QObject.connect(self, core.SIGNAL('aboutToQuit()'), self.close)
+#        self.connect(self.department, core.SIGNAL('updateDatabase(bool)'),
+#                     self, core.SLOT('rollback(bool)'))
+        self.department.updateDatabase.connect(self.rollback)
+#        core.QObject.connect(self, core.SIGNAL('aboutToQuit()'), self.close)
+        self.aboutToQuit.connect(self.close)
     
     def close(self):
         self.department.close()
@@ -43,7 +47,6 @@ class Application(gui.QApplication):
             
     @core.Slot('int')
     def updateEmployee(self, employee_id):
-        
         ui = self.mw.ui
         employee = self.department.get_employee_info(employee_id)
         empl = self.__get_employee()
@@ -61,6 +64,7 @@ class Application(gui.QApplication):
             phone = empl.phone,         
         )
         
+        
         if not is_employee_updated:            
             return self.__show_err(self.mw.ui, is_employee_updated == False,
                                    self.department.get_error() if not is_employee_updated else "")
@@ -77,19 +81,19 @@ class Application(gui.QApplication):
         is_contract_updated = self.department.update_contract(employee[1],
             signed = empl.signed,
             type = empl.type
-        )        
+        )
         
         # Комитим изменения в БД, если удалось всё выполнить
         is_updated = is_employee_updated and is_passport_updated and is_contract_updated
         self.acceptChanges(is_updated)
         if is_updated:
+            # Обновить сведенья о занимаемых должностях
+            self.__update_employee_position(employee_id)
             ui.err_output.setVisible(False)
         else:
             return self.__show_err(self.mw.ui, is_updated == False,
-                                   self.department.get_error() if not is_updated else "")
+                                   self.department.get_error() if not is_updated else '')
         
-        # Обновить сведенья о занимаемых должностях
-        self.__update_employee_position(employee_id)
             
     @core.Slot()
     def addEmployee(self):
@@ -109,16 +113,18 @@ class Application(gui.QApplication):
             ok = self.department.set_position(employee_id, position_id, rates[i])
             self.acceptChanges(ok)
         
-        self.mw.updatePositionList(employee_id)
         self.mw.updateEmployeesList()
         
     @core.Slot()
     def showPersonnelSchedule(self):
         # Штатное расписание
         self.ps = self.__show_personnal_schedule_window()
-        self.connect(self.ps, core.SIGNAL('addPosition()'), self, core.SLOT('addPosition()'))
-        self.connect(self.ps, core.SIGNAL('deletePosition(int)'), self, core.SLOT('deletePosition(int)'))
-        self.connect(self.ps, core.SIGNAL('updatePosition(int, QString, int)'), self, core.SLOT('updatePosition(int, QString, int)'))
+#        self.connect(self.ps, core.SIGNAL('addPosition()'), self, core.SLOT('addPosition()'))
+        self.ps.addPosition.connect(self.addPosition)
+#        self.connect(self.ps, core.SIGNAL('deletePosition(int)'), self, core.SLOT('deletePosition(int)'))
+        self.ps.deletePosition.connect(self.deletePosition)
+#        self.connect(self.ps, core.SIGNAL('updatePosition(int, QString, int)'), self, core.SLOT('updatePosition(int, QString, int)'))
+        self.ps.updatePosition.connect(self.updatePosition)
         self.ps.show()
         
     @core.Slot()
@@ -128,8 +134,9 @@ class Application(gui.QApplication):
         self.pt.setMinimumSize(640, 480)
         self.pt.setMaximumSize(800, 800)   
         self.pt.show()
-        self.connect(self.pt, core.SIGNAL('positionChose(int)'),
-                     self, core.SLOT('addPositionToList(int)'))
+#        self.connect(self.pt, core.SIGNAL('positionChose(int)'),
+#                     self, core.SLOT('addPositionToList(int)'))
+        self.pt.positionChose.connect(self.addPositionToList)
         
     @core.Slot('int')
     def addPositionToList(self, position_id):

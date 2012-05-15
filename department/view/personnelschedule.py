@@ -4,6 +4,11 @@ import PySide.QtCore as core
 from PySide.QtUiTools import QUiLoader
 
 class PersonnelSchedule(gui.QMainWindow):
+    
+    addPosition = core.Signal()
+    deletePosition = core.Signal(int)
+    updatePosition = core.Signal(int, str, int)
+    
     def __init__(self, application, department, parent=None):
         super(PersonnelSchedule, self).__init__(parent)
         self.application = application
@@ -31,14 +36,18 @@ class PersonnelSchedule(gui.QMainWindow):
             if value not in cat_list:
                 self.ui.category_cmb.addItem(value)
                 
-        self.connect(self.ui.add_position_btn, core.SIGNAL('clicked()'),
-                     self, core.SIGNAL('addPosition()'))
-        self.connect(self.ui.delete_position_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('deletePosition()'))
-        self.connect(self.positions, core.SIGNAL('dataChanged(QModelIndex, QModelIndex)'),
-                     self, core.SLOT('updatePosition(QModelIndex)'))
-        self.connect(self.department, core.SIGNAL('dataChanged()'), 
-                     self, core.SLOT('updatePositionList()'))
+#        self.connect(self.ui.add_position_btn, core.SIGNAL('clicked()'),
+#                     self, core.SIGNAL('addPosition()'))
+        self.ui.add_position_btn.clicked.connect(self.addPosition)
+#        self.connect(self.ui.delete_position_btn, core.SIGNAL('clicked()'),
+#                     self, core.SLOT('deletePosition()'))
+        self.ui.delete_position_btn.clicked.connect(self.deletePositionFromTable)
+#        self.connect(self.positions, core.SIGNAL('dataChanged(QModelIndex, QModelIndex)'),
+#                     self, core.SLOT('updatePosition(QModelIndex)'))
+        self.positions.dataChanged.connect(self.updatePosition)
+#        self.connect(self.department, core.SIGNAL('dataChanged()'), 
+#                     self, core.SLOT('updatePositionList()'))
+        self.department.dataChanged.connect(self.updatePositionList)
         
     @core.Slot()
     def updatePositionList(self):
@@ -58,23 +67,29 @@ class PersonnelSchedule(gui.QMainWindow):
         return completer
     
     @core.Slot()
-    def deletePosition(self):
+    def deletePositionFromTable(self):
         positions = self.positions.getPositionList()
         index = self.ui.position_table_view.currentIndex()
         row = index.row()
         if 0 <= row < len(positions):
-            self.emit(core.SIGNAL('deletePosition(int)'), positions[row][0])
+#            self.emit(core.SIGNAL('deletePosition(int)'), positions[row][0])
+            self.deletePosition.emit(positions[row][0])
     
     @core.Slot('QModelIndex')
     def updatePosition(self, index):
         columns = dict([(v,k) for (k,v) in self.positions.names.items()])
         positions = self.positions.getPositionList()
-        self.emit(core.SIGNAL('updatePosition(int, QString, int)'), 
-                  positions[index.row()][0], 
-                  columns[index.column()],
-                  positions[index.row()][index.column()])
+#        self.emit(core.SIGNAL('updatePosition(int, QString, int)'), 
+#                  positions[index.row()][0], 
+#                  columns[index.column()],
+#                  positions[index.row()][index.column()])
+        self.updatePosition.emit(positions[index.row()][0], columns[index.column()],
+                                 positions[index.row()][index.column()])
         
 class PersonnelTable(gui.QMainWindow):
+    
+    positionChose = core.Signal(int)
+    
     def __init__(self, department, parent=None):
         super(PersonnelTable, self).__init__(parent)
         self.department = department
@@ -99,10 +114,11 @@ class PersonnelTable(gui.QMainWindow):
             
         self.setCentralWidget(self.table)
         
-        self.connect(self.table, core.SIGNAL('doubleClicked(const QModelIndex&)'),
-                     self, core.SLOT('closeWithPositionCode(const QModelIndex&)'))
+#        self.connect(self.table, core.SIGNAL('doubleClicked(const QModelIndex&)'),
+#                     self, core.SLOT('closeWithPositionCode(const QModelIndex&)'))
+        self.table.doubleClicked.connect(self.closeWithPositionCode)
         
-    @core.Slot('const QModelIndex&')
+    @core.Slot('QModelIndex')
     def closeWithPositionCode(self, index=None):
         if index is None:
             index = self.table.currentIndex()
@@ -110,5 +126,6 @@ class PersonnelTable(gui.QMainWindow):
         row = index.row()
         if row < 0 or row >= len(positions):
             return
-        self.emit(core.SIGNAL('positionChose(int)'), positions[row][0])
+#        self.emit(core.SIGNAL('positionChose(int)'), positions[row][0])
+        self.positionChose.emit(positions[row][0])
         self.close()

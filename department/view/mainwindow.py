@@ -53,29 +53,42 @@ class MainWindow(gui.QMainWindow):
         self.ui.position_table_view.setColumnWidth(3, 200)
         self.updatePositionList()
         
-        self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('updateEmployeesList()'))
-        self.connect(self.ui.employee_list_view, core.SIGNAL('clicked(const QModelIndex &)'),
-                     self, core.SLOT('setEmployeeInfo(const QModelIndex &)'))
-        self.connect(self.ui.education_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
-                     self, core.SLOT('enableSomeComboBox()'))
-        self.connect(self.ui.gender_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
-                     self, core.SLOT('updateFamilyStatusComboBox(const QString&)'))
-        self.connect(self.ui.copy_address_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('copyAddress()'))
-        self.connect(self.ui.clear_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('clear()'))
-        self.connect(self.ui.update_employee_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('updateEmployee()'))
-        self.connect(self.ui.add_employee_btn, core.SIGNAL('clicked()'),
-                     self.application, core.SLOT('addEmployee()'))
-        self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
-                     self.application, core.SIGNAL('showPersonnelSchedule()'))
-        self.connect(self.ui.accept_position_btn, core.SIGNAL('clicked()'),
-                     self.application, core.SIGNAL('showPersonnelTable()'))
-        self.connect(self.ui.reject_position_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('removeFromPosition()'))
-        self.connect(self.department, core.SIGNAL('dataChanged()'), 
-                     self, core.SLOT('updatePositionList()'))
+        #self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('updateEmployeesList()'))
+        self.ui.search_btn.clicked.connect(self.updateEmployeesList)
+        #self.connect(self.ui.employee_list_view, core.SIGNAL('clicked(const QModelIndex &)'),
+        #             self, core.SLOT('setEmployeeInfo(const QModelIndex &)'))
+        self.ui.employee_list_view.clicked.connect(self.setEmployeeInfo)
+        #self.connect(self.ui.education_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
+        #             self, core.SLOT('enableSomeComboBox()'))
+        self.ui.education_cmb.currentIndexChanged.connect(self.enableSomeComboBox)
+#        self.connect(self.ui.gender_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
+#                     self, core.SLOT('updateFamilyStatusComboBox(const QString&)'))
+        self.ui.gender_cmb.currentIndexChanged[str].connect(self.updateFamilyStatusComboBox)
+        
+#        self.connect(self.ui.copy_address_btn, core.SIGNAL('clicked()'),
+#                     self, core.SLOT('copyAddress()'))
+        self.ui.copy_address_btn.clicked.connect(self.copyAddress)
+#        self.connect(self.ui.clear_btn, core.SIGNAL('clicked()'),
+#                     self, core.SLOT('clear()'))
+        self.ui.clear_btn.clicked.connect(self.clear)
+#        self.connect(self.ui.update_employee_btn, core.SIGNAL('clicked()'),
+#                     self, core.SLOT('updateEmployee()'))
+        self.ui.update_employee_btn.clicked.connect(self.updateEmployee)
+#        self.connect(self.ui.add_employee_btn, core.SIGNAL('clicked()'),
+#                     self.application, core.SLOT('addEmployee()'))
+        self.ui.add_employee_btn.clicked.connect(self.application.addEmployee)
+#        self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
+#                     self.application, core.SIGNAL('showPersonnelSchedule()'))
+        self.ui.show_personnel_schedule_btn.clicked.connect(self.application.showPersonnelSchedule)
+#        self.connect(self.ui.accept_position_btn, core.SIGNAL('clicked()'),
+#                     self.application, core.SIGNAL('showPersonnelTable()'))
+        self.ui.accept_position_btn.clicked.connect(self.application.showPersonnelTable)
+#        self.connect(self.ui.reject_position_btn, core.SIGNAL('clicked()'),
+#                     self, core.SLOT('removeFromPosition()'))
+        self.ui.reject_position_btn.clicked.connect(self.removeFromPosition)
+#        self.connect(self.application, core.SIGNAL('dataChanged()'), 
+#                     self, core.SLOT('updatePositionList()'))
+        self.application.dataChanged.connect(self.updatePositionList)
         
         self.updateFamilyStatusComboBox(self.ui.gender_cmb.currentText())
         self.ui.update_employee_btn.setEnabled(False)

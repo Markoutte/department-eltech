@@ -34,6 +34,9 @@ class EmployeeListModel(core.QAbstractListModel):
         return self.employees[index.row()][0]
     
 class PositionTableModel(core.QAbstractTableModel):
+    
+    dataChanged = core.Signal(core.QModelIndex, core.QModelIndex)
+    
     positions=[]
     COLUMNS = 9
     names = {'Код':0,
@@ -171,7 +174,8 @@ class PositionTableModel(core.QAbstractTableModel):
         self.positions.remove(self.positions[row])
         self.positions.insert(row, tuple(record))
         
-        self.emit(core.SIGNAL('dataChanged(const QModelIndex&, const QModelIndex&)'), index, index)
+#        self.emit(core.SIGNAL('dataChanged(QModelIndex, QModelIndex)'), index, index)
+        self.dataChanged.emit(index, index)
         return True
     
     def flags(self, index):
