@@ -1,6 +1,6 @@
-import unittest
 import department.sql as sql
 import psycopg2
+import unittest
 
 class Test(unittest.TestCase):
 

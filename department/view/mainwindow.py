@@ -1,6 +1,6 @@
 import department.sql as sql
-import PySide.QtGui as gui
 import PySide.QtCore as core
+import PySide.QtGui as gui
 from PySide.QtUiTools import QUiLoader
 
 class MainWindow(gui.QMainWindow):
@@ -45,62 +45,38 @@ class MainWindow(gui.QMainWindow):
         
         self.employees = sql.EmployeeListModel()
         self.ui.employee_list_view.setModel(self.employees)
-        self.updateEmployeesList()
+        self.update_employees_list()
         
         self.positions = sql.PositionTableModel()
         self.ui.position_table_view.setModel(self.positions)
         self.ui.position_table_view.setColumnWidth(1, 120)
         self.ui.position_table_view.setColumnWidth(3, 200)
-        self.updatePositionList()
+        self.update_position_list()
         
-        #self.connect(self.ui.search_btn, core.SIGNAL('clicked()'), self, core.SLOT('updateEmployeesList()'))
-        self.ui.search_btn.clicked.connect(self.updateEmployeesList)
-        #self.connect(self.ui.employee_list_view, core.SIGNAL('clicked(const QModelIndex &)'),
-        #             self, core.SLOT('setEmployeeInfo(const QModelIndex &)'))
-        self.ui.employee_list_view.clicked.connect(self.setEmployeeInfo)
-        #self.connect(self.ui.education_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
-        #             self, core.SLOT('enableSomeComboBox()'))
-        self.ui.education_cmb.currentIndexChanged.connect(self.enableSomeComboBox)
-#        self.connect(self.ui.gender_cmb, core.SIGNAL('currentIndexChanged(const QString&)'),
-#                     self, core.SLOT('updateFamilyStatusComboBox(const QString&)'))
-        self.ui.gender_cmb.currentIndexChanged[str].connect(self.updateFamilyStatusComboBox)
-        
-#        self.connect(self.ui.copy_address_btn, core.SIGNAL('clicked()'),
-#                     self, core.SLOT('copyAddress()'))
-        self.ui.copy_address_btn.clicked.connect(self.copyAddress)
-#        self.connect(self.ui.clear_btn, core.SIGNAL('clicked()'),
-#                     self, core.SLOT('clear()'))
+        self.ui.search_btn.clicked.connect(self.update_employees_list)
+        self.ui.employee_list_view.clicked.connect(self.set_employee_info)
+        self.ui.education_cmb.currentIndexChanged.connect(self.enable_some_combo_box)
+        self.ui.gender_cmb.currentIndexChanged[str].connect(self.update_family_status_combobox)
+        self.ui.copy_address_btn.clicked.connect(self.copy_address)
         self.ui.clear_btn.clicked.connect(self.clear)
-#        self.connect(self.ui.update_employee_btn, core.SIGNAL('clicked()'),
-#                     self, core.SLOT('updateEmployee()'))
-        self.ui.update_employee_btn.clicked.connect(self.updateEmployee)
-#        self.connect(self.ui.add_employee_btn, core.SIGNAL('clicked()'),
-#                     self.application, core.SLOT('addEmployee()'))
-        self.ui.add_employee_btn.clicked.connect(self.application.addEmployee)
-#        self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
-#                     self.application, core.SIGNAL('showPersonnelSchedule()'))
-        self.ui.show_personnel_schedule_btn.clicked.connect(self.application.showPersonnelSchedule)
-#        self.connect(self.ui.accept_position_btn, core.SIGNAL('clicked()'),
-#                     self.application, core.SIGNAL('showPersonnelTable()'))
-        self.ui.accept_position_btn.clicked.connect(self.application.showPersonnelTable)
-#        self.connect(self.ui.reject_position_btn, core.SIGNAL('clicked()'),
-#                     self, core.SLOT('removeFromPosition()'))
-        self.ui.reject_position_btn.clicked.connect(self.removeFromPosition)
-#        self.connect(self.application, core.SIGNAL('dataChanged()'), 
-#                     self, core.SLOT('updatePositionList()'))
-        self.application.dataChanged.connect(self.updatePositionList)
+        self.ui.update_employee_btn.clicked.connect(self.update_employee)
+        self.ui.add_employee_btn.clicked.connect(self.application.add_employee)
+        self.ui.show_personnel_schedule_btn.clicked.connect(self.application.show_personnel_schedule)
+        self.ui.accept_position_btn.clicked.connect(self.application.show_personnel_table)
+        self.ui.reject_position_btn.clicked.connect(self.remove_from_position)
+        self.application.data_changed.connect(self.update_position_list)
         
-        self.updateFamilyStatusComboBox(self.ui.gender_cmb.currentText())
+        self.update_family_status_combobox(self.ui.gender_cmb.currentText())
         self.ui.update_employee_btn.setEnabled(False)
-        self.ui.position_table_view.hideColumn(self.positions.names['Код'])
-        self.ui.position_table_view.hideColumn(self.positions.names['Ставок'])
-        self.ui.position_table_view.hideColumn(self.positions.names['Занято'])
-        self.ui.position_table_view.hideColumn(self.positions.names['Сотрудников'])
+        self.ui.position_table_view.hideColumn(self.positions.kCode)
+        self.ui.position_table_view.hideColumn(self.positions.kRateAmount)
+        self.ui.position_table_view.hideColumn(self.positions.kRateBooked)
+        self.ui.position_table_view.hideColumn(self.positions.kEmployees)
         self.clear()
     
     ## Обновить список сотрудников в левой части окна
     @core.Slot()
-    def updateEmployeesList(self):
+    def update_employees_list(self):
         text = self.ui.search_le.text()
         if text == '' or text == "'":
             employees = self.department.get_employees_list()
@@ -110,7 +86,7 @@ class MainWindow(gui.QMainWindow):
         
     ## Обновить список должностей в нижней части окна
     @core.Slot()
-    def updatePositionList(self, employee_id=None):
+    def update_position_list(self, employee_id=None):
         if employee_id is not None:
             positions = self.department.get_positions_list(employee_id)
             self.positions.setPositionList(positions)
@@ -125,7 +101,7 @@ class MainWindow(gui.QMainWindow):
     
     ## Заполнить поля сотрудника или очищает его, если не указан индекс выделенного сотрудника
     @core.Slot('const QModelIndex &')
-    def setEmployeeInfo(self, index=None):
+    def set_employee_info(self, index=None):
         self.ui.err_output.setVisible(False)
         is_ok = index is not None 
         if is_ok:
@@ -167,27 +143,27 @@ class MainWindow(gui.QMainWindow):
         self.ui.type_cmb.setCurrentIndex({'временный':0, 'постоянный':1}.get(employee[self.TYPE])
                                          if is_ok else 0)
         
-        self.updatePositionList(employee_id) if is_ok else self.positions.setPositionList([])
+        self.update_position_list(employee_id) if is_ok else self.positions.setPositionList([])
         self.ui.update_employee_btn.setEnabled(True)
         self.ui.add_employee_btn.setEnabled(False)
         self.ui.err_output.setVisible(False)
         
     @core.Slot()
-    def removeFromPosition(self):
+    def remove_from_position(self):
         index = self.ui.position_table_view.currentIndex()
         if 0 <= index.row() < self.positions.rowCount():
             self.positions.removeRow(index.row())
         
     ## Делает активным или неактивном некоторые выпадающие списки
     @core.Slot()
-    def enableSomeComboBox(self):
+    def enable_some_combo_box(self):
         text = self.ui.education_cmb.currentText()
         self.ui.degree_cmb.setEnabled(text == 'высшее')
         self.ui.programme_le.setEnabled(text in ('высшее', 'высшее неоконченное'))
     
     ## Обновляет список вариантов для семейного статуса в зависимости от выбранного полаы
     @core.Slot('const QString&')
-    def updateFamilyStatusComboBox(self, string):
+    def update_family_status_combobox(self, string):
         self.ui.family_status_cmb.clear()
         if string == 'мужской':
             self.ui.family_status_cmb.addItems(['холост', 'женат', 'разведён', 'вдовец'])
@@ -196,7 +172,7 @@ class MainWindow(gui.QMainWindow):
     
     ## Коприует адрес из адреса проживания в адрес регистрации
     @core.Slot()
-    def copyAddress(self):
+    def copy_address(self):
         text = self.ui.address_2_te.toPlainText()
         if text != '':
             self.ui.address_1_te.setPlainText(text)
@@ -204,22 +180,22 @@ class MainWindow(gui.QMainWindow):
     ## Очищает все поля        
     @core.Slot()
     def clear(self):
-        self.setEmployeeInfo(None)
+        self.set_employee_info(None)
         self.ui.update_employee_btn.setEnabled(False)
         self.ui.add_employee_btn.setEnabled(True)
         # Снять выделение
         self.ui.employee_list_view.setCurrentIndex(self.ui.employee_list_view.rootIndex())
         
     @core.Slot()
-    def updateEmployee(self):
-        self.application.updateEmployee(
+    def update_employee(self):
+        self.application.update_employee(
             self.employees.personnel_number(self.ui.employee_list_view.currentIndex())
         )
     
     @core.Slot('tuple')
-    def addPosition(self, record):
+    def add_position(self, record):
         self.positions.insertData(record)
     
     def keyPressEvent(self, event):
         if event.key() in (core.Qt.Key_Return, core.Qt.Key_Enter):
-            self.updateEmployeesList()
+            self.update_employees_list()

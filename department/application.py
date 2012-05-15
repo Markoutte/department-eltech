@@ -1,12 +1,12 @@
-import psycopg2
 import department.sql as sql
 import department.view as view
+import psycopg2
 import PySide.QtCore as core
 import PySide.QtGui as gui
 
 class Application(gui.QApplication):
     
-    dataChanged = core.Signal()
+    data_changed = core.Signal()
     
     def __init__(self, argv):
         super(Application, self).__init__(argv)
@@ -24,10 +24,7 @@ class Application(gui.QApplication):
         self.mw.show()
         
         ## connections
-#        self.connect(self.department, core.SIGNAL('updateDatabase(bool)'),
-#                     self, core.SLOT('rollback(bool)'))
         self.department.updateDatabase.connect(self.rollback)
-#        core.QObject.connect(self, core.SIGNAL('aboutToQuit()'), self.close)
         self.aboutToQuit.connect(self.close)
     
     def close(self):
@@ -39,14 +36,14 @@ class Application(gui.QApplication):
         if not ok:
             self.conn.rollback()
         
-    def acceptChanges(self, ok):
+    def accept_changes(self, ok):
         if ok:
             self.conn.commit()
         else:
             self.conn.rollback()
             
     @core.Slot('int')
-    def updateEmployee(self, employee_id):
+    def update_employee(self, employee_id):
         ui = self.mw.ui
         employee = self.department.get_employee_info(employee_id)
         empl = self.__get_employee()
@@ -85,7 +82,7 @@ class Application(gui.QApplication):
         
         # Комитим изменения в БД, если удалось всё выполнить
         is_updated = is_employee_updated and is_passport_updated and is_contract_updated
-        self.acceptChanges(is_updated)
+        self.accept_changes(is_updated)
         if is_updated:
             # Обновить сведенья о занимаемых должностях
             self.__update_employee_position(employee_id)
@@ -96,11 +93,11 @@ class Application(gui.QApplication):
         
             
     @core.Slot()
-    def addEmployee(self):
+    def add_employee(self):
         current_positions = self.mw.positions.getPositionList()
         employee = self.__get_employee()
         employee_id = self.department.add_employee(employee)
-        self.acceptChanges(employee_id != 0)
+        self.accept_changes(employee_id != 0)
         if employee_id == 0:
             self.mw.positions.setPositionList(current_positions)
             return self.__show_err(self.mw.ui, employee_id == 0, 
@@ -111,46 +108,42 @@ class Application(gui.QApplication):
         rates = [x[RATE] for x in current_positions]
         for i, position_id in enumerate(ids):
             ok = self.department.set_position(employee_id, position_id, rates[i])
-            self.acceptChanges(ok)
+            self.accept_changes(ok)
         
-        self.mw.updateEmployeesList()
+        self.mw.update_employees_list()
         
     @core.Slot()
-    def showPersonnelSchedule(self):
+    def show_personnel_schedule(self):
         # Штатное расписание
         self.ps = self.__show_personnal_schedule_window()
-#        self.connect(self.ps, core.SIGNAL('addPosition()'), self, core.SLOT('addPosition()'))
-        self.ps.addPosition.connect(self.addPosition)
-#        self.connect(self.ps, core.SIGNAL('deletePosition(int)'), self, core.SLOT('deletePosition(int)'))
-        self.ps.deletePosition.connect(self.deletePosition)
-#        self.connect(self.ps, core.SIGNAL('updatePosition(int, QString, int)'), self, core.SLOT('updatePosition(int, QString, int)'))
-        self.ps.updatePosition.connect(self.updatePosition)
+        self.ps.add_position.connect(self.add_position)
+        self.ps.delete_position.connect(self.delete_position)
+        self.ps.update_position.connect(self.update_position)
         self.ps.show()
         
     @core.Slot()
-    def showPersonnelTable(self):
+    def show_personnel_table(self):
         self.pt = view.PersonnelTable(self.department, self.mw)
         self.pt.resize(680, 480)
         self.pt.setMinimumSize(640, 480)
-        self.pt.setMaximumSize(800, 800)   
+        self.pt.setMaximumSize(800, 800)
+        self.pt.setWindowTitle("Назначение на должность")   
         self.pt.show()
-#        self.connect(self.pt, core.SIGNAL('positionChose(int)'),
-#                     self, core.SLOT('addPositionToList(int)'))
-        self.pt.positionChose.connect(self.addPositionToList)
+        self.pt.positionChose.connect(self.add_position_to_list)
         
     @core.Slot('int')
-    def addPositionToList(self, position_id):
+    def add_position_to_list(self, position_id):
         # Проверка на факт уже наличия такой должности в списке
         current_positions = self.mw.positions.getPositionList()
         if position_id in [x[0] for x in current_positions]:
             return
-        self.mw.addPosition(self.department.get_position_info(position_id))
+        self.mw.add_position(self.department.get_position_info(position_id))
         # В новой записи, которая появится в конце, — ставка равно 1.0 
         RATE = 4
         self.mw.positions.setItem(len(current_positions) - 1, RATE, 1.0)
         
     @core.Slot()
-    def addPosition(self):
+    def add_position(self):
         ui = self.ps.ui
         position = sql.Position()
         position.position = ui.position_le.text() if ui.position_le.text() not in ("", "'") else None
@@ -159,25 +152,25 @@ class Application(gui.QApplication):
         position.rate_amount = ui.rate_amount_le.text() if ui.rate_amount_le.text() not in ("", "'") else None
         position.salary =  ui.salary_le.text() if ui.salary_le.text() not in ("", "'") else None
         is_added = self.department.add_position(position)
-        self.acceptChanges(is_added)
+        self.accept_changes(is_added)
         self.__show_err(self.ps.ui, is_added == False, 
                                    self.department.get_error() if not is_added else "")
         
     @core.Slot('int')
-    def deletePosition(self, position_id):
+    def delete_position(self, position_id):
         is_ok = self.department.delete_position(position_id)
-        self.acceptChanges(is_ok)
+        self.accept_changes(is_ok)
         
-    @core.Slot('int', 'QString', 'int')
-    def updatePosition(self, position_id, field, value):
-        if field == 'Зарплата':
+    @core.Slot('int', 'int', 'int')
+    def update_position(self, position_id, field, value):
+        if field == sql.model.PositionTableModel.kSalary:
             arg = {'salary':value}
-        elif field == 'Ставок':
+        elif field == sql.model.PositionTableModel.kRateAmount:
             arg = {'rate_amount':value}
         else:
             return
         is_ok = self.department.update_position(position_id, **arg)
-        self.acceptChanges(is_ok)
+        self.accept_changes(is_ok)
         
     
     def __get_employee(self):
@@ -216,7 +209,7 @@ class Application(gui.QApplication):
     def __update_employee_position(self, employee_id):
         if employee_id <= 0:
             return False
-        RATE = self.mw.positions.names['Ставка']
+        RATE = self.mw.positions.kRate
         employee_position = self.department.get_positions_list(employee_id)
         current_position = self.mw.positions.getPositionList()
         # Получить список id из модели (список кортежей [()])
@@ -230,14 +223,14 @@ class Application(gui.QApplication):
         # Позиции для снятия с должности
         for position_id in empl - intersect:
             ok = self.department.remove_position(employee_id, position_id)
-            self.acceptChanges(ok)
+            self.accept_changes(ok)
         # Список из passport_id
         ids = items_list(0)(current_position)
         # Позиции для назначения на должности
         for position_id in curr - intersect:
             index = ids.index(position_id)
             ok = self.department.set_position(employee_id, position_id, current_position[index][RATE])
-            self.acceptChanges(ok)
+            self.accept_changes(ok)
         ids = items_list(0)(current_position)
         # Списки со щначениями ставок
         e_il = items_list(RATE)(employee_position)
@@ -248,7 +241,7 @@ class Application(gui.QApplication):
             if e_il[index] != c_il[index]:                
                 ok = self.department.set_rate(employee_id, position_id, 
                                               current_position[index][RATE])
-                self.acceptChanges(ok)
+                self.accept_changes(ok)
         
         
         

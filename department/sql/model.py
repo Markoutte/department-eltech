@@ -1,6 +1,6 @@
-import re
 import PySide.QtCore as core
 from PySide.QtCore import Qt
+import re
 
 class EmployeeListModel(core.QAbstractListModel):
     
@@ -35,19 +35,29 @@ class EmployeeListModel(core.QAbstractListModel):
     
 class PositionTableModel(core.QAbstractTableModel):
     
-    dataChanged = core.Signal(core.QModelIndex, core.QModelIndex)
+    data_changed = core.Signal(core.QModelIndex, core.QModelIndex)
     
     positions=[]
-    COLUMNS = 9
+    kColumns = 9
     names = {'Код':0,
-           'Должность':1,
-           'Разряд':2,
-           'Категория':3,
-           'Ставка':4,
-           'Зарплата':5,
-           'Ставок':6,
-           'Занято':7,
-           'Сотрудников':8}
+             'Должность':1,
+             'Разряд':2,
+             'Категория':3,
+             'Ставка':4,
+             'Зарплата':5,
+             'Ставок':6,
+             'Занято':7,
+             'Сотрудников':8}
+    
+    kCode = 0
+    kPosition = 1
+    kRank = 2
+    kCategory = 3
+    kRate = 4
+    kSalary = 5
+    kRateAmount = 6
+    kRateBooked = 7
+    kEmployees = 8
     
     def __init__(self, parent=None):
         super(PositionTableModel, self).__init__(parent)
@@ -66,12 +76,12 @@ class PositionTableModel(core.QAbstractTableModel):
         return len(self.positions)
     
     def columnCount(self, index=core.QModelIndex()):
-        return self.COLUMNS
+        return self.kColumns
     
     def data(self, index, role=Qt.DisplayRole):
         if index.row() < 0 or index.row() >= len(self.positions):
             return None
-        if index.column() < 0 or index.column() >= self.COLUMNS:
+        if index.column() < 0 or index.column() >= self.kColumns:
             return None
         if role in (Qt.DisplayRole, Qt.ToolTipRole, Qt.EditRole):
             return self.positions[index.row()][index.column()]
@@ -122,7 +132,7 @@ class PositionTableModel(core.QAbstractTableModel):
         
     def setItem(self, row, column, value):
         if (0 <= row < len(self.positions)
-            and 0 <= column < self.COLUMNS):
+            and 0 <= column < self.kColumns):
             record = list(self.positions[row])
             record[column] = value
             self.positions.remove(self.positions[row])
@@ -136,7 +146,7 @@ class PositionTableModel(core.QAbstractTableModel):
         if value == record[index.column()]:
             return False
         # Если меняем ставку, то пересчитвааем зарплату
-        if index.column() == self.names['Ставка']: 
+        if index.column() == self.kRate: 
             # Выставляем значение, близкое к тем, что есть в перечне
             values = (0.25, 0.5, 1.0)
             # Когда пользователь впервые редактирует
@@ -152,19 +162,19 @@ class PositionTableModel(core.QAbstractTableModel):
             differ = list(map(get_abs(value), values))
             value = values[differ.index(min(differ))]
             # Пересчитываем зарплату
-            salary = record[self.names['Зарплата']]
+            salary = record[self.kSalary]
             # Когда значение ставки не указано — ставим по умолчанию 1
             # для корректного пересчёта
             currval = record[index.column()] if record[index.column()] is not None else 1
-            record[self.names['Зарплата']] = (value * salary) / float(currval)
+            record[self.kSalary] = (value * salary) / float(currval)
         # если меняем зарпату и меняем это в общем окне
         # отсеиваем такие действия, т.к. если модель меняется
         # у сотрудника, то у него есть сведенья о ставке
         # в списке должностей такой информации нет
-        elif (index.column() == self.names['Зарплата'] and
-              record[self.names['Ставка']] is None):
-            record[self.names['Зарплата']] = value
-        elif index.column() == self.names['Ставок']:
+        elif (index.column() == self.kSalary and
+              record[self.kRate] is None):
+            record[self.kSalary] = value
+        elif index.column() == self.kRateAmount:
             pass
         else:
             return False
@@ -174,16 +184,15 @@ class PositionTableModel(core.QAbstractTableModel):
         self.positions.remove(self.positions[row])
         self.positions.insert(row, tuple(record))
         
-#        self.emit(core.SIGNAL('dataChanged(QModelIndex, QModelIndex)'), index, index)
-        self.dataChanged.emit(index, index)
+        self.data_changed.emit(index, index)
         return True
     
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        if index.column() not in (self.names['Ставка'], 
-                                  self.names['Зарплата'],
-                                  self.names['Ставок']):
+        if index.column() not in (self.kRate, 
+                                  self.kSalary,
+                                  self.kRateAmount):
             return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index))
         return Qt.ItemFlags(core.QAbstractTableModel.flags(self, index) | Qt.ItemIsEditable) 
     

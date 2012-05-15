@@ -1,5 +1,5 @@
-import sys
 from department.application import Application
+import sys
 
 def main():
     app = Application(sys.argv)

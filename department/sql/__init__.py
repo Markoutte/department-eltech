@@ -1,13 +1,13 @@
+from department.sql import model
+import logging
 import PySide.QtCore as Core
 import psycopg2
-import logging
-from department.sql import model
 
 ## Модель предметной области
 class Department(Core.QObject):
     
     updateDatabase = Core.Signal(bool)
-    dataChanged = Core.Signal()
+    data_changed = Core.Signal()
     
     def __init__(self, connection):
         Core.QObject.__init__(self)
@@ -255,11 +255,9 @@ class Department(Core.QObject):
         elif query[0:6] == 'DELETE':
             self.cursor.execute(query)
             is_succeed = True if self.cursor.statusmessage != 'DELETE 0' else False
-#        self.emit(Core.SIGNAL('updateDatabase(bool)'), is_succeed)
             self.updateDatabase.emit(is_succeed)
         if is_succeed:
-#            self.emit(Core.SIGNAL('dataChanged()'))
-            self.dataChanged.emit()
+            self.data_changed.emit()
         log.warn(query)
         return is_succeed
     
