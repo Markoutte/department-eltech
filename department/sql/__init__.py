@@ -255,9 +255,9 @@ class Department(Core.QObject):
         elif query[0:6] == 'DELETE':
             self.cursor.execute(query)
             is_succeed = True if self.cursor.statusmessage != 'DELETE 0' else False
-            self.updateDatabase.emit(is_succeed)
         if is_succeed:
             self.data_changed.emit()
+        self.updateDatabase.emit(is_succeed)
         log.warn(query)
         return is_succeed
     
