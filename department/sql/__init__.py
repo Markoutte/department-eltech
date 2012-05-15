@@ -47,8 +47,8 @@ class Department(Core.QObject):
         query = ("INSERT INTO employee(contract, fullname, gender, birth, "
                  "education, degree, programme, family_status, address, "
                  "phone, experience, passport) ")
-        query += ("VALUES ({contract}, {fullname}, {gender}, {birth}, "
-                 "{education}, {degree}, {programme}, {family_status}, {address}, "
+        query += ("VALUES ({contract}, INITCAP({fullname}), {gender}, {birth}, "
+                 "lower({education}), lower({degree}), lower({programme}), {family_status}, {address}, "
                  "{phone}, {experience}, {passport});"
                  .format(contract = take(contract_id),
                          fullname = take_str(employee.fullname),
@@ -80,7 +80,7 @@ class Department(Core.QObject):
         take = lambda x : x if x is not None else 'NULL'
         query = ("INSERT INTO personnel_schedule(position, rank, category, "
                  "salary, rate_amount) ")
-        query += ("VALUES ({position_name}, {rank}, {category}, "
+        query += ("VALUES (lower({position_name}), lower({rank}), lower({category}), "
                   "{salary}, {rate_amount});"
                   .format(position_name = take_str(position.position),
                           rank = take_str(position.rank), 

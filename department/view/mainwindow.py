@@ -70,7 +70,10 @@ class MainWindow(gui.QMainWindow):
                      self.application, core.SLOT('addEmployee()'))
         self.connect(self.ui.show_personnel_schedule_btn, core.SIGNAL('clicked()'),
                      self.application, core.SIGNAL('showPersonnelSchedule()'))
-        
+        self.connect(self.ui.accept_position_btn, core.SIGNAL('clicked()'),
+                     self.application, core.SIGNAL('showPersonnelTable()'))
+        self.connect(self.ui.reject_position_btn, core.SIGNAL('clicked()'),
+                     self, core.SLOT('removeFromPosition()'))
         self.connect(self.department, core.SIGNAL('dataChanged()'), 
                      self, core.SLOT('updatePositionList()'))
         
@@ -80,6 +83,7 @@ class MainWindow(gui.QMainWindow):
         self.ui.position_table_view.hideColumn(self.positions.names['Ставок'])
         self.ui.position_table_view.hideColumn(self.positions.names['Занято'])
         self.ui.position_table_view.hideColumn(self.positions.names['Сотрудников'])
+        self.clear()
     
     ## Обновить список сотрудников в левой части окна
     @core.Slot()
@@ -98,7 +102,13 @@ class MainWindow(gui.QMainWindow):
             positions = self.department.get_positions_list(employee_id)
             self.positions.setPositionList(positions)
         else:
-            self.positions.setPositionList([])
+            index = self.ui.employee_list_view.currentIndex()
+            if 0 <= index.row() < self.employees.rowCount():
+                employee_id = self.employees.employeesList()[index.row()][0]
+                positions = self.department.get_positions_list(employee_id)
+                self.positions.setPositionList(positions)
+            else:
+                self.positions.setPositionList([])
     
     ## Заполнить поля сотрудника или очищает его, если не указан индекс выделенного сотрудника
     @core.Slot('const QModelIndex &')
@@ -131,8 +141,8 @@ class MainWindow(gui.QMainWindow):
                                  if is_ok else '')
         
         passport = employee[self.PASSPORT].split(' ', 1) if is_ok else []
-        self.ui.serial_le.setText(passport[0] if is_ok else '')
-        self.ui.number_le.setText(passport[1] if is_ok else  '')
+        self.ui.serial_le.setText(passport[0] if is_ok else '0000')
+        self.ui.number_le.setText(passport[1] if is_ok else  '123456')
         self.ui.issue_date.setDate(core.QDate.fromString(employee[self.ISSUE], 'd.MM.yyyy')
                                    if is_ok else  core.QDate(2010, 1, 1))
         self.ui.authority_te.setPlainText(employee[self.AUTHORITY] if is_ok else '')
@@ -144,9 +154,16 @@ class MainWindow(gui.QMainWindow):
         self.ui.type_cmb.setCurrentIndex({'временный':0, 'постоянный':1}.get(employee[self.TYPE])
                                          if is_ok else 0)
         
-        self.updatePositionList(employee_id) if is_ok else self.updatePositionList()
+        self.updatePositionList(employee_id) if is_ok else self.positions.setPositionList([])
         self.ui.update_employee_btn.setEnabled(True)
         self.ui.add_employee_btn.setEnabled(False)
+        self.ui.err_output.setVisible(False)
+        
+    @core.Slot()
+    def removeFromPosition(self):
+        index = self.ui.position_table_view.currentIndex()
+        if 0 <= index.row() < self.positions.rowCount():
+            self.positions.removeRow(index.row())
         
     ## Делает активным или неактивном некоторые выпадающие списки
     @core.Slot()

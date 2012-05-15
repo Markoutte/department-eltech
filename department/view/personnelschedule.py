@@ -4,10 +4,6 @@ import PySide.QtCore as core
 from PySide.QtUiTools import QUiLoader
 
 class PersonnelSchedule(gui.QMainWindow):
-    
-    TableEditor = 1
-    PositionManager = 2
-    
     def __init__(self, application, department, parent=None):
         super(PersonnelSchedule, self).__init__(parent)
         self.application = application
@@ -41,8 +37,6 @@ class PersonnelSchedule(gui.QMainWindow):
                      self, core.SLOT('deletePosition()'))
         self.connect(self.positions, core.SIGNAL('dataChanged(QModelIndex, QModelIndex)'),
                      self, core.SLOT('updatePosition(QModelIndex)'))
-        self.connect(self.ui.accept_position_btn, core.SIGNAL('clicked()'),
-                     self, core.SLOT('closeWithPositionCode()'))
         self.connect(self.department, core.SIGNAL('dataChanged()'), 
                      self, core.SLOT('updatePositionList()'))
         
@@ -50,6 +44,10 @@ class PersonnelSchedule(gui.QMainWindow):
     def updatePositionList(self):
         positions = self.department.get_positions_list()
         self.positions.setPositionList(positions)
+        self.ui.position_le.setText('')
+        self.ui.rank_le.setText('')
+        self.ui.salary_le.setText('')
+        self.ui.rate_amount_le.setText('')
             
     def __get_completer(self, model, column=0):
         completer = gui.QCompleter()
@@ -58,18 +56,6 @@ class PersonnelSchedule(gui.QMainWindow):
         completer.setCaseSensitivity(core.Qt.CaseInsensitive)
         completer.setCompletionColumn(column)
         return completer
-    
-    @core.Slot()
-    @core.Slot('const QModelIndex&')
-    def closeWithPositionCode(self, index=None):
-        if index is None:
-            index = self.ui.position_table_view.currentIndex()
-        positions = self.positions.getPositionList()
-        row = index.row()
-        if row < 0 or row >= len(positions):
-            return
-        self.emit(core.SIGNAL('positionChose(int)'), positions[row][0])
-        self.close()
     
     @core.Slot()
     def deletePosition(self):
@@ -88,3 +74,41 @@ class PersonnelSchedule(gui.QMainWindow):
                   columns[index.column()],
                   positions[index.row()][index.column()])
         
+class PersonnelTable(gui.QMainWindow):
+    def __init__(self, department, parent=None):
+        super(PersonnelTable, self).__init__(parent)
+        self.department = department
+        self.model = sql.PositionTableModel()
+        self.model.setPositionList(department.get_positions_list())
+        self.table = gui.QTableView()
+        self.table.setEditTriggers(0)
+        self.table.setModel(self.model)
+        
+        self.table.setHorizontalScrollMode(gui.QAbstractItemView.ScrollPerPixel)
+        self.table.verticalHeader().setVisible(False)
+        self.table.verticalHeader().setDefaultSectionSize(20)
+        self.table.horizontalHeader().setDefaultSectionSize(60)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setSelectionBehavior(gui.QAbstractItemView.SelectRows)
+        self.table.setVerticalScrollMode(gui.QAbstractItemView.ScrollPerPixel)
+        self.table.setSelectionMode(gui.QAbstractItemView.SingleSelection)
+        self.table.hideColumn(sql.model.PositionTableModel.names['Код'])
+            
+        self.table.setColumnWidth(1, 120)
+        self.table.setColumnWidth(3, 200)
+            
+        self.setCentralWidget(self.table)
+        
+        self.connect(self.table, core.SIGNAL('doubleClicked(const QModelIndex&)'),
+                     self, core.SLOT('closeWithPositionCode(const QModelIndex&)'))
+        
+    @core.Slot('const QModelIndex&')
+    def closeWithPositionCode(self, index=None):
+        if index is None:
+            index = self.table.currentIndex()
+        positions = self.model.getPositionList()
+        row = index.row()
+        if row < 0 or row >= len(positions):
+            return
+        self.emit(core.SIGNAL('positionChose(int)'), positions[row][0])
+        self.close()

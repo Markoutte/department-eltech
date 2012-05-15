@@ -117,6 +117,14 @@ class PositionTableModel(core.QAbstractTableModel):
             self.positions.remove(self.positions[position])
         self.endRemoveRows()
         
+    def setItem(self, row, column, value):
+        if (0 <= row < len(self.positions)
+            and 0 <= column < self.COLUMNS):
+            record = list(self.positions[row])
+            record[column] = value
+            self.positions.remove(self.positions[row])
+            self.positions.insert(row, tuple(record))
+    
     def setData(self, index, value, role):
         if index.isValid() and role == Qt.EditRole:
             row = index.row()

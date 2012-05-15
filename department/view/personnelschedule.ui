@@ -47,6 +47,9 @@ padding: 5px;</string>
      <attribute name="horizontalHeaderDefaultSectionSize">
       <number>60</number>
      </attribute>
+     <attribute name="horizontalHeaderHighlightSections">
+      <bool>false</bool>
+     </attribute>
      <attribute name="horizontalHeaderMinimumSectionSize">
       <number>27</number>
      </attribute>
@@ -58,6 +61,9 @@ padding: 5px;</string>
      </attribute>
      <attribute name="verticalHeaderDefaultSectionSize">
       <number>20</number>
+     </attribute>
+     <attribute name="verticalHeaderHighlightSections">
+      <bool>false</bool>
      </attribute>
     </widget>
    </item>
@@ -175,20 +181,6 @@ padding: 5px;</string>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QPushButton" name="add_position_btn">
-       <property name="text">
-        <string>Добавить должность</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="delete_position_btn">
-       <property name="text">
-        <string>Удалить выделенное</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -202,9 +194,16 @@ padding: 5px;</string>
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="accept_position_btn">
+      <widget class="QPushButton" name="add_position_btn">
        <property name="text">
-        <string>Назначить</string>
+        <string>Добавить должность</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="delete_position_btn">
+       <property name="text">
+        <string>Удалить выделенное</string>
        </property>
       </widget>
      </item>
