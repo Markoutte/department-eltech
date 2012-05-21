@@ -17,9 +17,7 @@ class Department(Core.QObject):
         return self
         
     def __exit__(self, type, value, traceback):
-        if self.cursor is not None:
-            self.cursor.close()
-            del self.cursor
+        self.close()
             
     def close(self):
         if self.cursor is not None:

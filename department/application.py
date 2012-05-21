@@ -213,28 +213,28 @@ class Application(gui.QApplication):
         employee_position = self.department.get_positions_list(employee_id)
         current_position = self.mw.positions.getPositionList()
         # Получить список id из модели (список кортежей [()])
-        ids = lambda l : set([x[0] for x in l])
+        get_id_set = lambda l : {x[0] for x in l}
         # Список значения конкрентного столбца i в моделе l
-        items_list = lambda i : lambda l : [x[i] for x in l]
-        empl = ids(employee_position)
-        curr = ids(current_position)
-        intersect = ids(current_position) & ids(employee_position)
+        empl = get_id_set(employee_position)
+        curr = get_id_set(current_position)
+        intersect = empl & curr
 
         # Позиции для снятия с должности
+        get_items_list = lambda i : lambda l : [x[i] for x in l]
         for position_id in empl - intersect:
             ok = self.department.remove_position(employee_id, position_id)
             self.accept_changes(ok)
         # Список из passport_id
-        ids = items_list(0)(current_position)
+        ids = get_items_list(0)(current_position)
         # Позиции для назначения на должности
         for position_id in curr - intersect:
             index = ids.index(position_id)
             ok = self.department.set_position(employee_id, position_id, current_position[index][RATE])
             self.accept_changes(ok)
-        ids = items_list(0)(current_position)
+        ids = get_items_list(0)(current_position)
         # Списки со щначениями ставок
-        e_il = items_list(RATE)(employee_position)
-        c_il = items_list(RATE)(current_position)
+        e_il = get_items_list(RATE)(employee_position)
+        c_il = get_items_list(RATE)(current_position)
         # Позиции, которые, возможно, нужно изменить
         for position_id in intersect:
             index = ids.index(position_id)
